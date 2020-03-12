@@ -1,0 +1,109 @@
+
+
+
+1. 주식가격
+
+
+풀이
+
+
+def solution(prices):
+    answer = [0] * len(prices)
+    
+    for i in range(len(prices)-1):
+        for j in range(i,len(prices)-1):
+            if prices[i] > prices[j]:
+                break
+            else:
+                answer[i] +=1
+    return answer
+
+
+# answer 길이를 정하기위해 [0]과 prices의 길이를 곱해준값이 asnwer배열이다.
+# 그리고 이중포문으로 [0]이 들어가있기떄문에 -1해주고 prices[i] > prices[j] 이렇다면 기준 가치보다
+# 떨어졌기떄문에 break한다. 이경우가 아니라면 +1초씩 해준다 그리고 answer을 리턴해준다.
+
+
+
+2. 기능 개발
+
+
+풀이
+
+def solution(progresses, speeds):
+    
+    
+    answer = []
+    
+    while len(progresses):
+        ck = False  # 작업이 완료되었는지 아닌지 확인하기위한 플래그
+        cnt = 0 #완료된 작업수
+        for i in range(len(progresses)):
+            progresses[i] +=speeds[i]
+        while len(progresses)!=0 and progresses[0]>=100:
+            ck = True 
+            cnt +=1
+            del progresses[0]
+            del speeds[0]
+        if ck:
+            answer.append(cnt)
+    return answer
+    
+
+# answer의 배열공간을 만들어주고 progresses의 길이만큼 whlie문을 돌린다. 먼저 작업이 완료되었는지
+# 아닌지 확인을 하기위해 플래그 ck를 만들고 아직 완료되지 않았으므로 False로 둔다. 그리고 카운트인 cnt를 만들고
+# progresses길이 만큼 반복문을 돌린다 그와중에 progresses[i]에 speeds[i]만큼 반복문을 돌떄마다 더한다.
+# 그리고 길이가 0이 아니고 progresses[0]가 100이 아니면 작업완료로 True로 두고 cnt를 1증가시킨다.
+# 그리고 작업을 완료했으므로 progresses[0]과 speeds[0]를 del로 제거한다. 그리고 True이므로 
+# cnt를 answer에 보낸다. 이과정을 반복해서 answer을 리턴한다.
+
+
+
+
+3. 소수 찾기
+
+
+풀이
+
+
+
+from itertools import permutations
+ 
+def solution(numbers):
+    
+    # 소수 판별할 리스트 만들기
+    list = [] # 전체 순열 넣어줄 리스트
+    for i in range(1,len(numbers)+1) :
+        test_list = permutations(numbers,i)       
+        for j in test_list :
+            list.append(int("".join(j)))
+        
+    list = set(list) # 중복과 0, 1 제외
+    if 0 in list :
+        list.remove(0)        
+    if 1 in list :
+        list.remove(1)
+        
+    # 소수 판별 
+    answer = len(list) # 모든 수가 소수라 가정하고 시작
+    for i in list :
+        if i != 2 :
+            for j in range(2,int(i**0.5)+1) :
+                if i % j== 0 :
+                    answer -=1
+                    break
+        
+    return answer
+
+
+
+
+# from itertools import permutations 모듈을 써준다. 그리고 판별할 리스트를 만들기위해 list라는 리스트를 만들어준다.
+# 그리고 1부터 넘버 길이만큼 반복문을 돌리고 또 판별할 리스트변수를 만들고 permutations를 돌린다. 그리고 이중포문으로
+# 테스트 길이만큼 정수로 바꿔서 리스트에 보낸다. 그리고 리스트에 담긴 값들을 중복을 제거한다. 그리고 만약 0일떄 0을 제거하고 1일떄 1을 제거한다
+# 그리고 마지막으로 소수판별인데 answer이라는 변수를 만들고 list길이라고 칭한다. 그리고 이길이만큼 반복문을 돌린다. 모든수가 소수라고 가정한다
+# 만약 2가 아닐때 이중포문으로 들어가서 2부터  i의 0.5승 +1만큼 반복하고 i%j가 짝수 일시 answer에서 1씩 감소하는것으로 소수개수를 판별한다.
+# 마지막으로 answer을 리턴한다.
+
+
+

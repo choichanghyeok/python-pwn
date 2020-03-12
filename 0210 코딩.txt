@@ -1,0 +1,135 @@
+
+목표
+
+1. x만큼 간격이 있는 n개의 숫자
+
+
+풀이
+
+
+def solution(x, n):
+    an = [x]
+    for i in range(2,n+1):
+        an.append(x*i)
+        
+    return an
+
+
+# an배열에 x[0]값인 x을 처음에 넣어주고 (2, n+1) 만큼 돌린다
+# 그후 x*i를 하여 그의 배수들을 an의 배열에 보낸다.
+
+
+
+2. 직사각형 별찍기
+
+ 
+풀이
+
+
+a, b = map(int, input().strip().split(' '))
+
+for i in range(b):
+    for j in range(a):
+        print("*", end = "")
+    print("")
+
+
+
+# range(b)로 b(열) 세로 range(a)는 a(행) 가로 기준으로 반복문을 돌린다음 
+# print("*" , end= "")  "*"으로 출력해주고 end로 줄바꿈을 하지않는다
+# 마지막 print("")으로 반복문이 끝나면 줄바꿈 해준다.
+
+
+
+3. 예산
+
+
+풀이
+
+
+def solution(d, budget):
+    answer = 0
+    
+    d.sort()
+    for i in d:
+        budget -= i
+        answer +=1
+        if budget < 0:
+            answer -=1
+    return answer
+
+
+# sort로 d의 배열을 정렬하고 반복문을 돌린다 그리고 budget에서 - i만큼 뺸다
+# 그러면서 answer 카운트는 올라간다 또 budget 가 0보다 작을떄 카운트를 
+# 하나뺀다. 그러면서 최대 몇개까지 딱 예산에 맞게 구매하는지 알아본다.
+
+
+***********************************
+2/11 로미룸
+
+***********************************
+
+3개로 대체 ( 다시 이해하기)
+
+
+1. k번쨰수
+
+
+def solution(array, commands):
+    answer = []
+    for i in commands:
+        array_cut = array[i[0]-1:i[1]]
+        print(array_cut)
+        array_cut.sort()
+        a = array_cut[i[2]-1]
+        answer.append(a)
+    return answer
+
+
+
+
+# 민욱이한테 물어보기 왜?? array[i[0]-1:i[1]]이고 array_cut[i[2]-1]인지 물어보기
+
+
+
+
+
+2. 가운데글자 가져오기
+
+
+
+def solution(s):
+    i = len(s) //2
+    return s[i] if len(s) % 2 else s[i - 1 : i + 1]
+
+# len으로 길이를 구하고 //몫만 구한다. 그리고 길이가 짝수면 가운데글자만 출력
+# 홀수면 i-1 : i+1 만큼 출력한다.
+
+
+
+
+
+3. 2016년
+
+
+import datetime
+
+def solution(a, b):
+    stringname  = ["MON","TUE","WED","THU","FRI","SAT","SUN"]
+    return stringname[datetime.date(2016,a,b).weekday()]
+
+
+# 스트링네임으로 각 요일을 배열에 적고 리턴에 간추려서 적는다
+# 임폴트로 datetime 을 쓰고 .date와 .weekday()의 함수를 써서 구한다.
+#
+
+
+
+
+
+
+
+
+
+
+

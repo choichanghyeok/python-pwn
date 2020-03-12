@@ -1,0 +1,160 @@
+목표 
+
+하루 5문제
+
+
+
+2020 02 03
+
+1. 완주하지 못한 선수
+
+
+풀이
+
+
+def solution(participant, completion):
+    participant.sort()
+    completion.sort()
+    
+    for i,j in zip(participant, completion):
+        if i !=j: 
+            return i
+    return participant[-1]
+
+
+# zip함수를 써서 하나로묶음 (1,1) 처럼 그후 구한다.
+
+
+2. 두정수 사이의합
+
+
+풀이
+
+
+def solution(a, b):
+    if a < b:
+        s = sum(range(a,b+1))
+        return s
+    else:
+        s = sum(range(b,a+1))
+        return s
+
+
+
+3. 같은 숫자는 싫어
+
+
+내가푼거
+
+
+def solution(arr): 
+    answer = [] 
+    answer.append(arr[0])
+    
+    for i in range(1,len(arr)):
+        if arr[i] != arr[i-1]:
+            answer.append(arr[i])
+    return answer
+
+# answer 배열에다가 기본 arr[0]를 넣어주고 반복문을 돌린다 같은숫자가 아니면
+# 배열에 추가 그리고 배열인 answer 리턴
+
+
+답안지
+
+
+def solution(arr):
+    a = []
+    
+    for i in arr:
+        if a[-1:] == [i]:
+            continue
+        a.append(i)
+    return a
+
+
+
+4. 모의고사
+
+
+풀이
+
+
+def solution(answers):
+    answer = []
+    
+    s1 = [1, 2, 3, 4, 5]
+    s2 = [2, 1, 2, 3, 2, 4, 2, 5]
+    s3 = [3, 3, 1, 1, 2, 2, 4, 4, 5, 5]
+    score1 = 0
+    score2 = 0
+    score3 = 0
+    
+    
+    for i in range(len(answers)):
+        if s1[i%5] == answers[i]:
+            score1 += 1
+        if s2[i%8] == answers[i]:
+            score2 += 1
+        if s3[i%10] == answers[i]:
+            score3 += 1
+            
+    max_score = max([score1,score2,score3])
+    
+    if max_score == score1:
+        answer.append(1)
+    if max_score == score2:
+        answer.append(2)
+    if max_score == score3:
+        answer.append(3)
+        
+        
+    return answer
+
+
+# s1 s2 s3 배열을 만들고 각 스코어를 만든다. 그리고 반복문을 열어 
+# 만약에 같다면 1점 추가 이런시긍로 반복하고 최고스코어를 갱신한다
+# 후에 1팀 2팀 3팀 스코어를 answer배열에 넣고 최댓값을 리턴하면된다.
+
+
+5.수박수박수박수박수박수?
+
+
+풀이
+
+
+def solution(n):
+    
+    water = "수박"
+    
+    return water * (n // 2) + water[0] * (n % 2)
+
+
+
+# 수박이라는 변수를 만들고 n이  3이라면 수박수 가된다.
+# n이 5라면 "수박수박수" 가된다. 몫을 구하고 그 몫만큼 문자열 변수에다가 곱해주고
+# 그 n 의 나머지를 구해서 나머지만큼 문자열의 첫번쨰를 곱해줘서 표기해주면 된다.
+
+
+추가
+
+
+6. 약수의합
+
+
+풀이
+
+
+def solution(n):
+    sum = 0
+    
+    for i in range(1,n+1):
+        if n%i ==0:
+            sum += i
+            
+    return sum
+    
+        
+# sum 이라는 합변수를 만들어내고 반복문을 돌린다 n%i가 0이되는 값이 약수
+# 이므로 모든 i를 더한다 그리고 sum을 리턴한다.
+

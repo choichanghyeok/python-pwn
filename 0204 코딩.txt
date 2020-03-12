@@ -1,0 +1,120 @@
+코딩 5문제
+알고리즘문제
+
+1. 나누어 떨어지는 숫자 배열
+
+def solution(arr, divisor):
+    answer = []
+    count = 0
+    for i in range(len(arr)):
+        if arr[i]%divisor ==0:
+            answer.append(arr[i])
+            
+        else:				# if not answer:
+            count +=1				answer = [=1] 도 됨
+            
+        if count == len(arr):
+            answer.append(-1)
+            
+    answer.sort()
+    
+    return answer
+
+
+2. 문자열 내 마음대로 정렬하기
+
+(람다식 조금더 이해 해야함)
+
+def solution(strings, n):
+    return sorted(sorted(strings), key = lambda x:x[n])	>> sorted는 람다오 연관
+
+
+						>>sorted 와 key는 연관
+설명
+
+sorted((요소), key = lambda (요소) : 조건?or (요소) 갯수)
+
+
+3. 문자열 내림차순으로 배치하기
+
+
+def solution(s):
+    return ''.join(sorted(s, reverse=True))	>> reverse = True 는 내림차순
+					>> sort >> 오름차순
+
+
+''' . join()은 리스트 요소들을 "기준" 기준으로 합친다 
+ex "-"  고 요소가 [1,2,3,4]라면 1-2-3-4 이다.'''
+
+
+
+4. 문자열 내 p와 y의 개수
+
+def solution(s):
+    
+    c = s.lower()
+    cx = c.count('p')
+    cy = c.count('y')
+    
+    if cx == cy:
+        return True
+    else:
+        return False
+
+
+
+5. 문자열 다루기 기본
+
+		#isdigit() 사용 >> 숫자외 다른게 있다면 False 숫자만 있다면 True
+		#isalpha() 사용 >> 글자외 다른게 있다면 False 글자만 있다면 True
+
+
+def solution(s):
+    return s.isdigit() and (len(s)==4 or len(s)==6)
+
+	숫자가 아닌것들과 길이가 4~6인것들
+
+
+
+
+보통 생각할법한 풀이
+
+
+def solution(s):
+    
+    num = len(s)
+    
+    if (num == 4 or num == 6) and  s.isdigit():
+        return True
+    else:
+        return False
+
+
+추가로 푼 문제
+
+
+6.이상한 문자 만들기
+
+
+
+def solution(s):
+    result = []
+    
+    for char in s.split(' '):
+        idx  = 0
+        for i in char:
+            if idx %2 ==0:              # 총 3개의 조각 한개 한개 한개 씩 대소문자 다 싹다 바꿔줌 비교해서
+                result.append(i.upper())    # idx 로 1씩증가로인해 char 은 3  관련 글자들 %2로 홀짝이 갈라지면서
+            else:                           # 대소문자로 바뀜
+                result.append(i.lower())
+            idx +=1                         # 다음 글자 단어로 넘어가기위한 인덱스  0은 try , 1은 hello  2는 world
+            
+        result.append("*")                  #"T,r,Y,H,e,L,l,O,W,o,R,l,D  글자를 완성하면 이렇게 되어있기떄문에 띄어쓰기 넣어줌
+                                            # 끝날떄마다 넣어주는거임
+        
+    result.pop()                            # 빈여백 삭제
+    
+    return "".join(result)                  # ''.join(result) 으로 result에있는 요소들을 전부 합쳐버림
+
+
+
