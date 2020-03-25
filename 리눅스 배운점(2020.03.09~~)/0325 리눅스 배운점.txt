@@ -1,0 +1,68 @@
+34~35강
+
+1. init 6 안전모드 (복구모드)
+
+>> 런레벨 자동으로 부팅을하면 런레벨 3으로 부팅됨
+
+
+2. 컴퓨터 시작과 종료 명령어
+
+종료명령어 poweroff
+
+다른계정에게도 종료한다고 정리하라고 알리는명령어 shutdown
+	종료 취소는 shutdown -c
+
+
+
+3. 
+로그인하면
+
+로그인쉘		1./etc/profile 실행
+
+		2. /bin/login  >> ~/.profile 설정 실행
+
+프로필 사용해보기
+
+profile 을 nano로 실행해서 별칭을주고 alias aa='ls-l'을 주고 실제로 어떻게이용되는지 확인한다.
+만들고나서 다시 재접속 해야한다. 다른계정(모든계정)에서도 이 별칭을 쓸수있다.
+
+수정할떄 다지워도되고 #(주석) 처리해두됨.
+
+설정방법에는 두가지가있다
+
+1. /etc/profile 을 들어가서 sudo nano profile 을 실행해서 alias aa='ls -l' 구문을 넣고 저장하는 방법이 있고
+
+2. /etc/profile.d 로 들어가서 sudo nano alias.sh 라는 파일을 만들어준다. 
+이파일 안에 alias aa='ls -l' 이라고 저장하면 된다. 이러면 실행권한이 있든 없든 적용이 된다.
+
+3. (개인파일 즉 나만 쓸수있음)홈에서 ls-a를켜서 profile을 수정해주는것도 프로필을 바꿀수있다. 
+nano profile 명령어를 실행하고 alias aa='ls -l' 을 해주고 재로그인을 하면 적용된다.
+
+
+비로그인 쉘
+
+/bin/bash or /bin/su or terminal
+
+>> virtual terminal run/etc/bash/bashrc~/.bashrc  로그인할떄 bashrc만 실행됨
+
+로그아웃할떄 ~/bash_logout등 여러가지를 설정해주면 로그아웃을 할떄 실행된다.
+
+
+
+/etc/pam.d
+
+>>인증을할때 사용하는것들
+로그인할떄 login을 실행 (cat login)
+
+/etc/environment >> 패스(경로)가 있음
+
+결론
+중간중간 bashrc가 실행
+
+로그인 쉘 >> 1./etc/environment	2. /ett/profile	3./etc/profile.d/*.sh		4.~/.profile
+
+
+
+
+
+
