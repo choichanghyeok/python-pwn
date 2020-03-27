@@ -1,0 +1,116 @@
+1. 39강 
+
+PPA와 update-java-alternatives 를 이용해 jdk설치에 대해서 공부
+
+apt -cache search java | grep jdk 를 입력하여 jdk라는 java가 있는지를 찾는다.
+
+PPA (개인화된 패키기 저장소)
+
+apt -cache pkgnames | grep jdk >> jdk 라는 패키지 가 있는지 찾는다.
+
+******************
+(실습은 나중에)
+******************
+
+설치하려면 
+
+sudo add-apt-repository ppa:openjdk-r/ppa 를 입력
+
+그리고 sudo apt-get update 를 입력해서 업데이트를 해준다.
+
+그리고 sudo apt-get install openjdk-8-jdk 를 입력해서 설치해준다.
+
+****************************
+오라클 jdk버전 도 설치
+****************************
+
+sudo apt-get-repository ppa:webupd8team/java 를 입력
+
+apt-cache pkgename 을 입력하고
+
+apt-cache pkgename | grep oracle 입력하고
+
+apt-cache pkgename | grep java 를 입력해서 걸러준다.
+
+그리고 sudo apt-get update 를 설치후에 꼭 해줘야한다.
+
+우분투 내에 설치해준다.
+
+sudo apt install oracle-java8-installer 입력 그리고 설치
+(라이센스 문제 다 yy )
+(사용하는건 자유)
+
+java -version을 입력했을때 잘나오면 성공
+
+
+
+★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+다른 jdk를 쓰고싶다면
+
+update -java -alternatives 여기서 옵션을 입력해야하지만 옵션을 잘모르겠다면 엔터쳐서 옵션들을 확인한다.
+
+update -java -alternatives -l 을 입력
+
+확인후
+
+sudo update -java -alternatives -s java-1.8.0-openjdk-amd64를 입력
+
+그리고 java -version 을 입력해서 확인
+
+★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+
+
+
+
+
+
+2. 40강 
+
+>> 링크 관리도구에 대해서 공부
+
+
+실행파일이 한두개인데 경로가 설정되어있으면 너무 비효율적이라 기존에있는경로에 링크파일에 넣는 방법이있다.
+>> 단점 >> 계속 링크파일을 만들어쓰면 이름이 많아지는데 이덕에 충돌도 많이 일어날수도있다.
+
+ex)
+
+eidtor 라는 심볼기호를 만들고 이안에 nano , ni ,ed 라는 에디터들을 하나로 만든다.(다만 많이 귀찮아진다.)
+
+★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+링크파일 심볼릭으로 만드는법은
+
+in -s 파일 경로/생성할이름   >> 이렇게 만든다.
+
+또 update-alternatives 옵션		형식으로 사용한다.
+
+update-alternatives --config editor 입력 하면 등록되어있는 정보들이 나온다.
+
+여기서 다른 에디터로 바꾸면 기존 에디터가 바뀐다.
+
+원래 editor 명령어를 사용하면 vi 편집기가  사용되지만 저 config를 사용해서 바꾸어주면 nano나 등등 여러 편집기를 기본설정으로 사용가능하다.
+
+★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+
+update-alternatives --install 경로/만든생성파일 만든생성파일 ~/링크할 파일
+>> 해당 경로에 파일이 생성된다.
+
+같은 이름으로 했을때 최근에만든것이 실행된다. 또 이것도 다른파일을 실행하고싶다면.
+
+update-alternatives --config 생성한 파일 을 입력해서 번호를 입력해서 바꾸어준다.
+
+
+★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+update-alternatives -all 을 입력하면 지금 쓰고있는것들을 다보여준다.	
+
+★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+그래서 링크파일을 사용하는것보다는 update-alternatives 관련 명령어를 사용해서 한번에 교체해준다.
+
+jdk를 여러개설치했는데 이것도 update-java-alternatives 자바 버전의alternatives를 만들어주어서 링크파일을 한번에 교체해줄수있게 만들어줌.
+
+
+
