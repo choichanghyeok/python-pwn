@@ -1,0 +1,188 @@
+1. 46강
+
+톰캣 9.0 서버 설치하기
+
+apt-cache search tomcat | grep tomcat 을 입력해서 설치할수있는 버전이 있는지 보기
+
+사이트 >> tomcat.apache.org 접속 >> 다운로드 카테고리에 tomcat9 선택 >> 다운로드
+
+다운로드 디렉토리에 다운
+
+ls 눌러서 파일이 있는지 확인
+
+tar -zxvf apache-tomcat-9.0.14.tar.gz 명령어를 입력해서 압축을 해제
+
+usr/local 에 sido mkdir tomcat을 입력해서 디렉토를 만들어준다.
+
+그리고 mv ~/download/apache-tomcat-9.0.14/ tomcat/ 에 옮긴다.
+
+sudo mv ~/download/apache-tomcat-9.0.14/ tomcat/ 입력
+
+ls 를 눌러서 잘 되었는지 확인
+
+이후 실습(영상보면서)
+
+w3m http://localhost:8080
+
+없으면 설치
+
+sudo apt install w3m
+
+그리고 다시 w3m http://localhost:8080 입력
+
+실행되어있는지 종료되어있는지 ps -ef | grep tomcat 을 입력
+
+복잡하게 나오면 톰캣이 실행중 간단하게나오면 실행중이 아닌 상황임.
+
+다만 다른유저는 사용할수없음 사용하려면 관리하는 그룹을 만들어야함.
+
+
+
+
+2. 47강 
+
+톰캣 사용자 그룹
+
+id 유저 를 입력해서 계정이 존재하는지 확인
+
+sudo groupadd tomcat 그룹을 추가
+
+sudo usermod -a -G tomcat 사용자 추가
+
+sudo usermod -a -G tomcat 사용자 추가
+
+id 계정 입력해서 재대로 추가되었는지 확인
+
+로그아웃하고 재로그인하기
+
+tomcat 디렉토리 경로를 입력하고 
+
+sudo chown -R root:tomcat apache-tomcat-9.0.14/
+
+ls -l 을 입력해서 확인
+
+바뀌었는지 확인하기위해 안쪽 디렉토리까지 들어가서 ls -l 을 실행
+
+bin이라는 디렉토리에 가서 ls로 확인
+
+./startup.sh 실행
+
+
+sudo chmod -R g+w logs/ 로 권한 바꾸기
+
+./bin/startup.sh 입력 실행
+
+
+ps -ef | grep tomcat 실행이 되어있는지 확인 (실행되었다고했는데 실행이 안되었다면 오류) 
+
+conf 에 권한이 없기떄문에 실행이 안된거임
+
+따라서 읽기권한과 실행권한을 줘야함
+
+sudo chmod -R g+rx conf/ 를 입력후 실행
+
+그리고 다시 ./bin/startup.sh 입력
+
+w3m http://localhost:8080 입력후 들어감
+
+실행됨!!
+
+>> #이제 새로운계정 입장에서 실행 해봄
+
+ps -ef | grep tomcat 입력했을때 실행되고있는것을 볼수있음
+
+끄고싶다면 디렉토리 경로를 넣고 shutdown.sh 를 입력
+
+그리고 다시 ps -ef | grep tomcat  입력하면 정상적으로 종료가되어있는것을 볼수있음.
+
+
+
+실행을 하기위해서 이렇게 일일이 경로까지하고 실행하는것이 피곤하다면 패스를 설정해야한다.
+
+sudo nano /etc/environment 
+
+입력하지만 새로운계정은 sudo 그룹에 포함되어있지않아서 사용하지 못한다.
+
+방법이 2가지가 있는데 sudo 계정의 권한을 새 계정에 주던가 본계정에서 작업한다.
+
+본계정으로 돌아와서 sudo nano /etc/environment  입력한다.
+
+그리고 맨끝에 :user/local/tomcat/apache-tomcat-9.0.14/bin 을 입력 저장
+
+source /etc/environment 입력
+source ~/ .profile
+echo $PATH
+
+이제 바로 shutdown.sh 를 입력하면 바로 종료가 가능하다. ( 경로를 입력하지 않아두된다.)
+
+다른 계정도 마찬가지로 
+
+source /etc/environment 입력
+source ~/ .profile
+echo $PATH
+
+을 실행
+
+그리고 startup.sh 을 입력해도 실행이 가능하다.
+
+이컴퓨터를 종료하면 톰캣도 종료가됨 시작했을때 시작하게하려면 등록을 해야함.
+
+
+3. 48강
+
+80포트로 서비스하기
+
+네트워크에서 포트 포워딩을 해줌
+
+1. 이름 : 8080 호스트포트 : 8080 게스트포트 : 8080
+2. 이름 : 80 호스트포트 : 80 게스트포트 : 80
+
+만들기
+
+브라우저를 열어서 >> localhost:8080 입력
+
+포트번호 바꾸는법
+
+tomcat이 있는 디렉토리에 들어가서 conf 에 들어가 server.xml 을 실행
+(항상 백업본을 만들고 하는게 좋음 > 실수할수있으므로)
+
+커넥션관련 문장을 찾아서 수정해주면 됨
+
+connector port = "80" 으로 바꾸어줌
+
+그리고 서버를 셧다운하고 다시 시작한다. 실행되었는지 확인한다.
+
+이제 브라우저에서 다시  localhost:80 입력해서 접속한다. 
+(연결이 되지않는다. , 유닉스에서 1000번 이하의 포트번호는 관리자가 사용한다 이 1000번이하의 번호를 사용하려면
+권한을 받아야한다.)
+
+authbind 가 설치되어있는지 확인하기위해 authbind입력해서 확인한다.
+설치가 되어있지 않는다면
+
+sudo apt install authbind 입력해 설치
+
+/etc/authbind/ 라는 디렉토리가 생김
+
+cd byport/ 에 접속	sudo touch 80 파일을 하나 만든다.
+
+ls -l 로 권한들을 확인하고 sudo chmod 550(읽기와 실행권한을 열어놓는다) 80 
+
+이제 톰캣 그룹유저가 이파일에 접근할수 있어야하기 때문에 소유자도 바꾸어야한다.
+sudo chown root:tomcat 80
+
+ls -l 로 변경되었는지 확인
+
+이제 80모드를 사용가능하게됨
+
+실행하려면 exec authbind xxx.exe 형식으로 사용해야한다.
+
+톰캣을 bin 폴더로 들어가서 sudo nano startup.sh 입력
+
+그리고 exec 부분을 수정해야함
+
+앞부분에 exec authbind --deep 을 추가 저장 한다.
+
+이제 톰캣을 재시작해준다. 잘 실행되는지 확인하고 그리고 브라우저에서 80번포트로 서비스가 가능한지 확인해준다.
+
+자동으로 따로 실행하려면 정상적으로 사용하려면 서비스로 등록해야한다.
+
