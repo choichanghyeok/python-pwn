@@ -1,0 +1,260 @@
+1. 48강
+
+프로퍼티가 나올때까지(+ 프라이빗 변수) 공부
+
+ex)
+
+class Rect:
+    def __init__(self,w,h):
+        if w <=0 or h <= 0:
+            raise Exception("너비와 높이는 음수가 나올 수 없습니다.")
+        self.w = w
+        self.h = h
+    def get_area(self):
+        return self.w * self.h
+
+
+
+속성선언으로 외부에서 조작할수없는 함수로 선언할수있음
+
+ex)
+
+class Rect:
+    def __init__(self,w,h):
+        if w <=0 or h <= 0:
+            raise Exception("너비와 높이는 음수가 나올 수 없습니다.")
+        self.__w = w
+        self.__h = h
+    def get_area(self):
+        return self.__w * self.__h
+
+
+즉 외부에서 선언할수없음. 따라서 만들때만 값을 설정할수있고 이후에 설정을 하지못함.
+
+그래서 중간에 바꾸기 위해 
+
+class Rect:
+    def __init__(self,w,h):
+        if w <=0 or h <= 0:
+            raise Exception("너비와 높이는 음수가 나올 수 없습니다.")
+        self.__w = w
+        self.__h = h
+
+    def get_w(self):
+        return self.__w
+
+    def set_w(self, w):
+        if w<=0:
+            raise Exception("너비는 음수가 나올 수 없습니다.")
+        self.__w = w
+    def get_h(self):
+        return self.__h
+    def set_h(self, h):
+        if h <=0:
+            raise Exception("높이는 음수가 나올 수 없습니다.")
+        self.__h = h
+
+
+
+    def get_area(self):
+        return self.__w * self.__h
+
+rect = Rect(10,10)
+rect.set_w(rect.get_w() + 10)
+print(rect.get_area)
+
+
+get과 set을 만들어 사용한다.
+
+여기서 한단계 더 진화한 버전이 프로퍼티이다.
+
+기본적인 속성은 Attribute    어떤 처리를 해준 속성은 Property 이다.
+
+프로퍼티는 
+
+
+
+class Rect:
+    def __init__(self,w,h):
+        if w <=0 or h <= 0:
+            raise Exception("너비와 높이는 음수가 나올 수 없습니다.")
+        self.__w = w
+        self.__h = h
+    
+
+    @property
+    def w(self):
+        return self.__w
+    @idth.setter
+    def w(self, w):
+        if w<=0:
+            raise Exception("너비는 음수가 나올 수 없습니다.")
+        self.__w = w
+
+    @property
+    def h(self):
+        return self.__h
+    @idth.setter
+    def h(self, h):
+        if h <=0:
+            raise Exception("높이는 음수가 나올 수 없습니다.")
+        self.__h = h
+
+
+
+    def get_area(self):
+        return self.__w * self.__h
+
+
+rect = Rect(10,10)
+#rect.set_w(rect.get_w() + 10)
+
+rect.w = 10
+print(rect.get_area)
+
+
+
+이고 저 rect.w 의 값에 음수값을 넣게되면 오류가 나온다. 
+
+@:데코레이터  이렇게 @을 사용해서 편하게 코드를 짤수있다.
+
+
+
+2. 49강
+
+
+모듈 읽어 들이기
+
+
+- 기본 모듈을 사용하는 방법
+
+ex)
+math 모듈 (수학과 관련된 모듈)
+
+
+# math = __import__("math")		> 이거대신  import math 가능
+
+print(math.pi)
+print(math.sin(10))
+
+
+또 as를 사용하면 다른이름으로 정의가 가능하다
+
+예를들어
+
+import math as 수학 이라고했을때
+
+print(수학.pi)
+print(수학.sin(10))		
+
+이 가능하다.
+
+또 위 코드에서 수식어 자체가 불편하다 라고한다면
+
+from math import pi, sin 을 입력하게된다면
+
+print(pi)
+print(sin(10))
+
+이가능하다.
+
+또 모든 기능을 갖고싶다면
+
+from math import * 를 입력하게되면
+
+print(pi)
+print(sin(10))
+
+똑같이 가능하다 다만 위에 from math import pi, sin 같은경우 pi와 sin만 정의되어있기에 이 기능들만 가능하다.
+
+
+결론
+
+import math	(math.pi 형태로사용)
+import math as 수학 	(수학.pi 형태로사용)
+from math import pi, sin	(pi, sin 만 pi , sin 형태로 사용가능)
+from math improt *		(모든 기능을 사용가능하므로 pi,sin 형태도 사용가능)
+
+
+모듈은 from xx import xx 형태로 사용한다.
+
+
+
+3. 50강
+
+기본적인 표준 모듈
+
+
+★중요한것★
+
+
+구글에 파이썬 documentation 을 입력 사리트에 접속해서 라이브러리 선택해 여러 라이브러리 , 함수를 살펴보자.
+
+ex)
+
+import sys
+
+print(sys.version)
+print(sys.copyright) 
+
+꼭 기억해주어야하는
+
+print(sys.argv) !!!!	#명령 매개변수
+
+많이 쓰인다.
+
+import datetime  >> 날짜와 시간에 관련된 함수
+
+now = datetime.datetime.now()	>> 	현재 시간을 구할수있음
+
+만약 저 datetime을 쓰기 싫다면
+
+from datetime import datetime
+
+now =datetime.now()
+print(now.year)
+print(now.month)
+print(now.day)
+print(now.hour)
+print(now.minute)
+print(now.second)
+
+이 코드 형태처럼 사용하면 된다.
+
+파이썬에서 month 는 1~12를 이용하고 다른 코딩프로그램(c,c++등)에서는 0~11을 이용한다.
+
+
+now =datetime.now(2000,1,1,1,1,1)
+print(now.year)
+print(now.month)
+print(now.day)
+print(now.hour)
+print(now.minute)
+print(now.second)
+
+또 이러한식으로 now에서 지정을 해놓으면 지정을 해놓은 값 그대로 출력한다.
+
+
+import time	>> 시간관련된 함수
+
+time.sleep() >> 이 시간만큼 기다리게 한다.
+
+(time.sleep(2) 라면 2초 후에 실행됨)
+
+
+
+***************************************************************************************************************************************************
+
+또 바이너리파일이나 모듈과 모듈을 조합하는 방법은
+
+from urllib import request			>> 사이트를 긁어올수있는 모듈		즉 크롤링을 할수있는 모듈
+
+target = request.urlopen("주소")
+content = target.read()
+
+print(content)
+#print(content[:100])	>> 바이너리 문자열
+
+***************************************************************************************************************************************************
+
+
