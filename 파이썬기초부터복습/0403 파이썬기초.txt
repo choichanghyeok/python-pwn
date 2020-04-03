@@ -1,0 +1,455 @@
+1. 51강
+
+
+os 모듈의 os.listdir() 함수와 os.path.isdir() 함수를 사용하면 특정 디렉터리를 읽어 파일 디렉터리인지 확인할수있다.
+
+코드 ex)
+
+import os
+
+
+
+# 현재 폴더의 파일/폴더를 출력한다. (전부 긁어온다,)
+output = os.listdir(".")
+print("os.listdir()", output)
+print()
+
+# 현재 폴더의 파일/폴더를 구분한다.
+print("# 폴더와 파일 구분하기")
+for path in output:			>> True 면 폴더를 출력 False 면 파일을 출력
+	if os.path.isdir(path):
+		print("폴더", path)
+	else:
+		print("파일:", path)
+
+
+이 코드를 참고해서
+
+재귀함수를 이용한 코드를 작성해본다. ( 리스트 평탄화도 해야함)
+
+
+def flatten(data):
+	output = []
+	for i in data:
+		if type(i) == list:
+			outut = flatten(i)
+		else:
+			output.append(i)
+	return output
+
+example = [[1,2,3],[4,[5,6]],7,[8,9]]
+print("원본:", example)
+print("변환:", flatten(example))
+
+
+이제 위의 os코드를 이용해서 또 안에 폴더있을떄의 경우의 코드를 작성한다.
+
+
+import os
+
+# 폴더를 읽는 함수
+def read_folder(path):
+    output = os.listdir(path)
+    # 폴더의 요소 구분하기
+    for i in output:
+        if os.path.isdir(path+"/"+i):
+            # 폴더라면 계속 읽기
+            read_folder(path+"/"+i)
+        else:
+            # 파일이라면 출력하기
+            print("파일:", i)
+
+# 현재 폴더의 파일/폴더를 출력한다.
+read_folder(".")
+
+
+
+예외처리를 해주지않으면 ( 권한이 없는 폴더를 읽으려해서 !!) 실행이 중지된다. ( try구문으로 해결)
+
+*******************************************************************************
+
+디버깅 : 간단한 중단점 사용법
+
+(붉은색 점은 break 포인트 사용하려면 클릭 한번더 클릭하면 제거)
+
+버그 : 사소한 결함, 프로그램의 예상하지 못한 오류
+
+디버그 : 버그를 제거하는 것
+
+디버거 : 버그를 제거하는 것을 도와주는 프로그램
+
+디버거 계속실행 >> 계속이라는 버튼을 누르면 한줄한줄씩 출력되는 모습을 볼수있음
+
+중단점에 거렸을때 옆에있는 패널에대한 의미 (호출 스택에서 함수가 어떠한 형태로 가는지 과정을 볼수있음)
+
+*******************************************************************************
+
+변수 > Locals > path : "." >> 변수패널	( path가 "." 이다라는것이다)
+
+조사식 >> 어떠한값을 추가적으로 간단하게 확인해야할 필요가있을때 사용한다.
+
+ex)
+
+path.split("/")[-1] 이라고한다면 마지막 것의 내용을 볼수있음
+
+
+
+2. 52강~53강
+
+외부 모듈(라이브러리)
+
+외부 모듈 설치방법
+
+>> pip install 모듈이름
+또는
+ pip install 모듈이름 == 1.0.0 >> 버전의 변경을 피하기위해서 이렇게 씀
+
+파이썬도 별칭을 사용할수있음
+
+*************************************************************
+
+alias pip=pip3 
+
+이런식으로 alias 지칭할 명령어 별칭 = 사용할 명령어
+
+*************************************************************
+
+ex)
+
+pip install beautifulsoup4 >> 설치
+
+
+
+
+html_doc = """
+<html><head><title>The Dormouse's story</title></head>
+<body>
+<p class="title"><b>The Dormouse's story</b></p>
+
+<p class="story">Once upon a time there were three little sisters; and their names were
+<a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
+<a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
+<a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
+and they lived at the bottom of a well.</p>
+
+<p class="story">...</p>
+"""
+
+from bs4 import BeautifulSoup
+soup = BeautifulSoup(html_doc, 'html.parser')
+
+print(soup.select("h1"))
+print(soup.select("h1")[0].string)
+
+
+또 기상청 날씨를 긁어와본다면(웹페이지를 긁어본다)
+
+
+from urllib import request
+from bs4 import BeautifulSoup
+
+
+content = request.urlopen("http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=109")
+soup = BeautifulSoup(content, 'html.parser')
+
+
+print(soup.select("data"))
+
+
+데이터만 다출력이가능
+
+
+이제 반복문을 사용해서 만들어보자.
+
+
+from urllib import request
+from bs4 import BeautifulSoup
+
+
+content = request.urlopen("http://www.kma.go.kr/weather/forecast/mid-term-rss3.jsp?stnId=109")
+soup = BeautifulSoup(content, 'html.parser')
+
+for data in soup.select("data"):
+    print("시간:", data.select_one("temf").string)		>> 문자열만 출력하려면 string을 달아주면된다. 
+    print("날짜:", data.select_one("wf").string)		>> 또 select_one() 이라는 함수를 쓰면 특정한 값을 가져올수있다.
+    print("-"*20)
+
+
+
+BeautifulSoup 모듈은 라이브러리
+
+Flask 모듈은 프레임워크
+(마이크로 웹 프레임워크)
+
+
+
+구글에( python Flask Github 검색) 
+설치방법 사용방법 보기
+
+설치방법
+
+pip install -U(업그레이드 옵션) Flask
+
+
+
+
+from flask import Flask
+
+app = Flask(__name__)       # 클래스이름
+
+@app.route("/")             # 데코레이터 
+
+def hello():
+    return "Hello, World!"
+
+""" 
+맥의경우
+$export FLASK_APP=test.py #환경 변수를 설정 (터미널을 실행하고 한 번만)
+$flask run          # flask 명령
+
+윈도우의 경우
+$set FLASK_APP=test.py
+$flask run
+
+""" 
+
+실행하고 컨트롤 + c로 종료하고 다시 실행하려 flask run 만 입력하면된다.
+
+그리고 러닝에나와있는 실행결과 주소를 웹브라우저에 입력하면 내가 입력한 문자열을 볼수있다.
+
+************************************************************************************
+
+모듈은 라이브러리와 프레임워크로 구분이가능하다
+
+개발자가 모듈을 직접 사용한다 >> 정상적인 제어	(라이브러리)
+
+모듈이 개발자의 코드를 사용한다 >> 제어역전(IoC)	(프레임워크)
+
+
+
+개발자가 하나하나 가져와서 쓰는것을 정상적인 제어(라이브러리)라고한다.	>> 쉽게말해서 내가사용하면 라이브러리
+
+어떤 특정 모듈이 내가 만든 함수들을 모듈처럼 사용하는것이 제어역전(프레임워크)이다.	>> 내가 사용안하고 모듈이 다 해준다 프레임워크
+
+************************************************************************************
+
+
+
+
+
+3. 54강
+
+모듈 만들기
+
+1.특정 폴더를 만들고 파일을 두개를 만들어준다.
+한개는 모듈파일이고 나머지한개는 시작할 파일이다.	( 파일을 1 ,2 를 만든다고했을때)
+
+ex)
+
+1
+
+print(__name__)	>> __name__을 사용하면 파일의 이름이 들어감
+
+a = 10
+b = 20
+def c():
+	return 30
+
+
+
+2
+
+print(__name__)
+
+# python 파일.py
+# 파일 > 모듈 > 모듈 > 모듈
+# 파일 : 진입점(엔트리 포인트)
+# 메인 파일(main)
+
+improt 1
+
+print(1.a)
+print(1.b)
+print(1.c)
+
+
+
+활용을 한다면************************************************************
+
+
+1
+
+print(__name__)	>> __name__을 사용하면 파일의 이름이 들어감
+
+a = 10
+b = 20
+def c():
+	return 30
+
+if __name__ == "__main__":
+	print("엔트리 포인트입니다.B")
+
+
+
+
+2
+print(__name__)
+
+# python 파일.py
+# 파일 > 모듈 > 모듈 > 모듈
+# 파일 : 진입점(엔트리 포인트)
+# 메인 파일(main)
+
+improt 1
+
+print(1.a)
+print(1.b)
+print(1.c)
+
+if __name__ == "__main__":
+	print("엔트리 포인트입니다.A")
+
+
+
+
+
+
+4. 55강
+
+텍스트 데이터와 바이너리 데이터에 대해서 공부
+
+바이너리 : 2진수
+비트 : 8 : 비트
+빗트 * 8 : 바이트
+
+1. 컴퓨터가 데이터를 저장할 때는 무조건 숫자로 저장한다.
+- ehxdump 확인
+
+2. 파이썬의 파일 구분: 텍스트 데이터와 바이너리 데이터
+- 텍스트 데이터: 텍스트 편집기 편집 가능		(텍스트 파일이아니면 오류가 발생함)
+- 바이너리 데이터: 텍스트 편집기 편집 불가능 (특정 편집기 필요)
+
+- 바이너리 데이터지금 텍스트 편집기에서 있는 그대로 출력을 하고싶다면 rb ,rw 등 사용해야한다.
+- 바이너리 데이터 등 다른 데이터들을 처리하고싶으면 전용 모듈을 활용해야함
+
+3. 텍스트 데이터를 읽고 쓰는 방법
+	- r w a , 등등
+
+4. 바이너리 데이터를 읽고 쓰는 방법
+	- rb rw 등등
+
+
+
+
+
+5. 56강
+
+1. 함수 데코레이터
+
+>> 어떤 함수에 미리 만든 규격화된 처리를 적용할때 사용
+
+함수 데코레이터	: 함수로 만든 데코레이터
+
+ex)
+
+def 데코레이터(함수):
+    print("미리 어떤 처리를 진행합니다.")
+    return 함수
+@데코레이터
+def 테스트():
+        print("안녕하세요")
+
+#테스트 = 데코레이터(테스트)        @ 이코드와 @지운것과 같음
+테스트()
+
+
+클래스 데코레이터	: 클래스로 만든 데코레이터
+
+
+
+
+2. 상속
+
+>> 어떤 클래스가 갖고있는 기능을 물려받음
+
+# 클래스 > 최상위 부모클래스 무조건 상속!!
+
+ex)
+
+class 부모:
+    pass
+
+b= 부모() 
+#print(부모.mro())
+
+
+이렇게만해도 여러 b. , 부모. 을 입력하면 상속받았기떄문에 여러 기능들을 사용이 가능하다.
+
+사용법
+
+class 부모:
+    def 테스트():
+        print("안녕하세요.")
+
+class 자식(부모):
+    pass
+
+
+c = 자식()
+c.테스트()
+
+
+
+3. 최대값 최소값 구하기
+(코드작성)
+
+내가 푼코드
+
+목록 = [1,52,273,32,99,101]
+최대값 = []
+최소값 = []
+
+for i in 목록:
+    if i == max(목록):
+        최대값 = i
+    if i == min(목록):
+        최소값 = i
+
+print(최대값)
+print(최소값)
+
+
+
+*************************************영상에서 풀은 코드*************************************
+
+
+목록 = [1,52,273,32,99,101]
+최대값 = 목록[0]
+최소값 = 목록[0]
+
+for i in 목록:
+    if i < 최소값:
+        최소값 = i
+    if i > 최대값:
+        최대값 = i
+
+print(최대값)
+print(최소값)
+
+
+
+
+
+
+
+******************************************번외********************************************
+
+# 코딩스타일	(PEP8)
+
+>> 다른사람들도 자신이 제작한 코드를 보기떄문에 보기편하게 코드를 짤 필요가있음.
+>> 왜냐하면 업무를할떄 협업에 좋기떄문.
+
+# 항상 모르는것이 생기거나 생각이안나면 구글링 !!!!
+
+
+
