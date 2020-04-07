@@ -1,0 +1,45 @@
+#1.화면에 Hello World 문자열을 출력하라.
+
+#print("Hello World")
+
+#2.화면에 Mary's cosmetics을 출력하라. (중간에 '가 있음에 주의.)
+
+#print("Mary\'s cosmetics")
+
+#3.화면에 아래 문장을 출력하라. (중간에 "가 있음에 주의.)
+
+#print('신씨가 소리질렀다. "도둑이야".')
+
+#4.화면에 "C:\Windows"를 출력하라.
+
+#print("C:\\\\Windows")
+
+#5.다음 코드를 실행해보고 \t와 \n의 역할을 설명하라.
+
+# >> \t 는 Tap키와 같은 효과이고 \n은 줄넘김이다.
+
+#6.print 함수에 두 개의 단어를 입력한 예제이다. 아래 코드의 출력 결과를 예상하라.
+
+#print ("오늘은", "일요일") >> 오늘은 일요일 이 출력된다.
+
+#7.print() 함수를 사용하여 다음과 같이 출력하라.
+
+#print("naver;kakao;sk;samsung")
+
+#8.print() 함수를 사용하여 다음과 같이 출력하라.
+
+#print("nnaver/kakao/sk/samsung")
+
+#9.다음 코드를 수정하여 줄바꿈이 없이 출력되도록 하라. (힌트: end='') print 함수는 두 번 사용한다. 세미콜론 (;)은 한줄에 여러 개의 명령을 작성하기 위해 사용된다.
+
+#print("First", end=" "); print("second")
+
+#10.string 문자열의 길이를 구하여라.
+
+#string = "dk2jd923i1jdk2jd93jfd92jd918943jfd8923"
+
+#L = len(string)
+#print(L)
+
+
+###1~10번 까지 문제###
