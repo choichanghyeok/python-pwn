@@ -1,0 +1,24 @@
+·¹µåÇò ·Î±×ÀÎ ¾ÆÀÌµğ
+
+ID : root
+
+passwd : hackerschool
+
+
+»Ú¶ì ·Î±×ÀÎ ¾ÆÀÌµğ
+
+ID : trainer1
+
+passwd : trainer1
+
+
+
+trainer2 >> linuxer
+trainer3 >> computer
+trainer4 >> mungguta
+trainer5 >> goodluck
+trainer6 >> coffee
+trainer7 >> to the top
+trainer8 >> player
+trainer9 >> programming
+trainer10 >>  best!
