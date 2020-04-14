@@ -1,0 +1,81 @@
+#61.다음 코드의 결괏값에 대해 예측하여라
+
+#interest_0 = ['삼성전자', 'LG전자', 'SK Hynix']
+#interest_1 = interest_0
+#interest_1[0] = 'Naver'
+#print(interest_0)
+
+# 출력 결과 >> ['Naver', 'LG전자', 'SK Hynix']
+
+
+
+# 62.다음 코드의 결괏값에 대해 예측하여라
+
+#interest_0 = ['삼성전자', 'LG전자', 'SK Hynix']
+#interest_1 = interest_0[:2]
+#interest_1[0] = 'Naver'
+#print(interest_0)
+
+# 출력 결과 >> ['삼성전자', 'LG전자', 'SK Hynix']
+
+#63.my_variable 이름의 비어있는 튜플을 만들라.
+
+#my_variable = ()
+
+
+#64.다음 코드를 실행해보고 오류가 발생하는 원인을 설명하라.
+
+#>> t = (1, 2, 3)
+#>> t[0] = 'a'
+#Traceback (most recent call last):
+#  File "<pyshell#46>", line 1, in <module>
+#    t[0] = 'a'
+#TypeError: 'tuple' object does not support item assignment
+
+# 이유 >> 튜플은 고정된값으로 외부 변수선언으로 바꿀수 없다.
+
+#65.숫자 1 이 저장된 튜플을 생성하라.
+
+#tu = (1,)
+
+#66.아래와 같이 t에는 1, 2, 3, 4 데이터가 바인딩되어 있다. t가 바인딩하는 데이터 타입은 무엇인가?
+
+#t = 1, 2, 3, 4
+
+#print(type(t))
+
+# >> 데이터 타입은 튜플이다.
+
+
+#67.변수 t에는 아래와 같은 값이 저장되어 있다. 변수 t가 ('A', 'b', 'c') 튜플을 가리키도록 수정 하라.
+
+#t = ('a', 'b', 'c')
+#t = (t[0].upper(),t[1],t[2])
+#print(t)
+
+
+
+#68.다음 튜플을 리스트로 변환하라.
+
+#interest = ('삼성전자', 'LG전자', 'SK Hynix')
+
+#interest2 = list(interest)
+
+#print(interest2)
+
+
+#69.다음 리스트를 튜플로 변경하라.
+
+#interest = ['삼성전자', 'LG전자', 'SK Hynix']
+
+#a = tuple(interest)
+
+#print(a)
+
+#70.아래 코드의 실행 결과를 예측하라
+
+#my_tuple = (1, 2, 3)
+#a, b, c = my_tuple
+#print(a + b + c)
+
+# 6이 출력된다
