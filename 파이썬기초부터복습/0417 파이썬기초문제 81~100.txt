@@ -1,0 +1,170 @@
+#81.아래의 표에서, 아이스크림 이름을 키값으로, (가격, 재고) 리스트를 딕셔너리의 값으로 저장하라. 딕셔너리의 이름은 inventory로 한다.
+
+
+#inventory = {'메로나':[300,20], '비비빅':[400,3],'죠스바':[250,100]}
+
+#print(inventory)
+
+
+#82.081의 inventory 딕셔너리에서 메로나의 가격을 화면에 출력하라.
+
+#print("가격 : ",inventory['메로나'][0],'원')
+
+
+#83.081의 inventory 딕셔너리에서 메로나의 재고를 화면에 출력하라.
+
+#print("재고 : ",inventory['메로나'][1],'개')
+
+
+#84.081의 inventory 딕셔너리에 아래 데이터를 추가하라.
+
+#inventory['월드콘'] = [500,7]
+
+#print(inventory)
+
+
+#85.다음의 딕셔너리에서 key 값으로만 구성된 리스트를 생성하라.
+
+#icecream = {'탱크보이': 1200, '폴라포': 1200, '빵빠레': 1800, '월드콘': 1500, '메로나': 1000}
+
+#Li = list(icecream.keys())
+
+#print(Li)
+
+
+
+#86.다음의 딕셔너리에서 values 값으로만 구성된 리스트를 생성하라.
+
+#icecream = {'탱크보이': 1200, '폴라포': 1200, '빵빠레': 1800, '월드콘': 1500, '메로나': 1000}
+
+#Lis = list(icecream.values())
+
+#print(Lis)
+
+
+#87.icecream 딕셔너리에서 아이스크림 판매 금액의 총합을 출력하라.
+
+#print('총합 금액 : ', sum(Lis))
+
+#88.아래의 new_product 딕셔너리를 087번의 icecream 딕셔너리에 추가하라.
+
+#new_product = {'팥빙수':2700, '아맛나':1000}
+
+#icecream.update(new_product)        #upeate라는 메소드가 있음 
+
+#print(icecream)
+
+
+
+#89.아래 두 개의 튜플을 하나의 딕셔너리로 변환하라. keys를 키로, vals를 값으로 result 이름의 딕셔너리로 저장한다.
+
+#keys = ('apple', 'pear', 'peach')
+#vals = (300, 250, 400)
+
+#result = dict(zip(keys,vals))  >> 딕셔너리 변환이므로 dict 사용
+                                #>> zip으로 쌍으로 묶어준다.
+
+#print(result)
+
+
+
+#90.date와 close_price 두 개의 리스트를 close_table 이름의 딕셔너리로 생성하라.
+
+
+#date = ['09/05', '09/06', '09/07', '09/08', '09/09']
+#close_price = [10500, 10300, 10100, 10800, 11000]
+
+
+#close_table = dict(zip(date,close_price))
+
+#print(close_table)
+
+
+
+
+#91.파이썬에서 True 혹은 False를 갖는 데이터 타입은 무엇인가?
+
+#>> bool 타입 
+
+#92.아래 코드의 출력 결과를 예상하라
+
+#print(3==5)
+
+#>> False
+
+#93.아래 코드의 출력 결과를 예상하라
+
+#print(3 < 5)
+
+# >> True
+
+
+#94.아래 코드의 결과를 예상하라.
+
+#print ((3 == 3) and (4 != 3))
+
+#>>True
+
+
+#95.아래 코드의 결과를 예상하라.
+
+#x = 4
+#print(1 < x < 5)
+
+#>>True
+
+
+
+#96.아래 코드에서 에러가 발생하는 원인에 대해 설명하라.
+
+#print(3 => 4)
+
+# 기호 위치가 잘못되었다 >= , <= 형식으로 해야 한다.
+
+
+#97.아래 코드의 출력 결과를 예상하라
+
+#if 4 < 3:
+#    print("Hello World.")
+#else:
+#    print("Hi, there.")
+
+#>> Hi, there. 출력
+
+
+#98.아래 코드의 출력 결과를 예상하라
+
+#if 4 < 3:
+#    print("Hello World")
+
+#>> 출력이안됨 
+
+
+#99.아래 코드의 출력 결과를 예상하라
+
+#if True :
+#    print ("1")
+#    print ("2")
+#else :
+#    print("3")
+#print("4")
+
+# True 이므로 1 2 4 가 출력
+
+#100.아래 코드의 출력 결과를 예상하라
+
+#if True :
+#    if False:
+#        print("1")
+#        print("2")
+#    else:
+#        print("3")
+#else :
+#    print("4")
+#print("5")
+
+# 첫 if문이 True 이므로 제어문 안으로 들어가고
+# 두번재 if문에서 False이므로 else로 들어간다 따라서 3을 출력한다.
+# 마지막으로 반복문 탈출해서 5를 출력한다
+
+# 출력 결과는 >> 3 5 이다.
