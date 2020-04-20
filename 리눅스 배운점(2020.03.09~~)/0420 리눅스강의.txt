@@ -1,0 +1,142 @@
+1. 메일서버에 대해서
+
+##메일서버 개념
+>>E-Mail의 송수신에서 사용되는 프로토콜
+
+SMTP > 클라이언트가 메일을 보내거나, 메일 서버끼리 메일을 주고받을 때
+
+POP3 > 메일 서버에 도착되어 있는 메일을 클라이언으로 가져올떄
+
+IMAP > POP3와 같음
+
+@@과정@@
+
+네임서버 < > 메일서버 1 < SMTP > 인터넷 < SMTP > 메일서버 2 < > 네임서버
+
+	      △        ▽			      △        ▽
+	  SMTP   POP3,IMAP		 POP3,IMAP  SMTP
+
+	          PC1				pc2
+
+
+
+
+%% 네임서버 구축 %%
+
+우분투
+
+apt-get -y install sendmail 설치
+
+vi /etc/hostname 을 입력하고 server 로 되어있는 부분을 mail.naver.com 으로 바꾸어준다.
+
+주소아래에
+vi /etc/hosts 를 열고 192.168.111.100 mail.naver.com 을 추가
+
+vi /etc/mail/local-host-names 입려하고 server 아래에 mail.naver.com 추가
+
+그리고  reboot 입력으로 리부트 시켜준다.
+
+
+서버B에도 똑같이 설치하고 설정한다. (설정 주소는 mail.daum.net 추가 ip주소는 192.168.111.200 )
+
+이제 네임서버를 지정해야한다. (우분투로 지정)
+
+apt-get install bin9 bin9utils 설치
+
+vi /etc/bind/name.conf.options 열어서 directory 아래
+
+recursion yes:
+allow-query { any; }; 두줄 추가
+
+vi /etc/bind/name.conf 열고 도메인 두개를 등록
+
+아래에다가 
+
+zone "naver.com" IN {
+	type master;
+	file "/etc/bind/naver.com.db;
+};
+
+zone "daum.net" IN {
+	type master;
+	file "/etc/bind/daum.net.db;
+};
+
+그리고
+
+cd /etc/bind 이동
+
+touch naver.com.db daum.net.db 파일을 만들어준다.
+
+vi naver.com.db 입력해서
+
+$TTl	3H
+@	IN	SOA	@	root.	(	2	1D	1H	1W	1H	)
+@	IN	NS	@
+	IN	A	192.168.111.100
+	IN	MX	10	mail.naver.com.
+
+mail	IN	A	192.68.111.100
+
+똑같이 daum.net.db 를 설정해준다.
+
+
+그리고 
+
+named-checkconf
+named-checkzoon	naver.com naver.com.db
+named-checkzoon	daum.net daum.net.db
+
+cd /etc/bind 이동후
+
+systemctl restart bind9	입력
+
+systemctl enable bind9	입력
+
+실습하기위해 방화벽을 꺼준다(ufw disable 명령어는 방화벽을 끄는 명령어)
+
+nslookup
+
+server 192.168.111.100
+
+mail.naver.com
+
+mail.daum.net
+
+으로 잘 응답하는지 확인
+
+
+vi /etc/NetworkManger/system-connections/유선\ 연결\ 1 입력
+
+ipv4로 가서 dns 를 바꾸어준다 192.168.111.100; 
+
+vi /etc/resolv.conf
+
+메인서버를 192.168.111.100 으로바꾸어준다.	( 지금까지 적은 서버주소는 자기 서버주소)
+
+그리고 클라이언트 터미널을 열고
+
+유선연결됨 클릭하고 유선네트워크 설정을 클릭 
+설정 IP를 누르고 IPv4를 눌러주고 네임서버를 끄고 192.168.111.100 으로 설정
+
+그리고 reboot 로 재부팅 해준다.
+
+(꼭 확인해준다 문제가 하나생기면 작동을 하지않기때문)
+
+이제 다시 터미널을 열고 nslookup 으로 확인
+
+서버 B도 vi /etc/network/interfaces 입력
+
+dns 네임서버를 192.168.111.100 으로 바꿔준다.
+
+vi /etc/resolv.conf 를 켜고 네임서버를 192.168.111.100 으로 바꿔준다.
+
+그리고 nslookup으로 바뀌었는지 확인해준다.
+
+
+윈도우 클라이언트에서도 netsh interface ip set dns Ethernet0 static 192.168.111.100 입력
+
+nslookup 으로 확인
+
+
+(여기까지가 네트워크망까지 구축이 되었음 (아직까지 서버는 설치가안됨) 즉 이메일 함이 구축이 되었음)
