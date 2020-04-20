@@ -1,73 +1,100 @@
-1. 가장 기본적인 클래스 사용법
+1. 클래스 접근제한자
 
-#파이썬 중급 강의 
-# 클래스
 
-# 클래스 틀을 만들고 그다음 객체를 만들고 사용!!
+ex)
+
+class Sj:
+    def __init__(self):
+    #    self.kor = 98
+        self.__eng = 77       # self.__eng 라고하면 속성을 접근할수없다고 나온다.
+    #    self.mat = 88
+    #def disp(self):
+    #    print(self.__eng)   # 하지만 같은클래스 내부에서는 __ 써도 쓸수있다.
+    def geteng(self):   # 즉 C++로 생각하면 생성자 생성
+        return self.__eng
+    def seteng(self,eng):
+        self.__eng = eng
+
+s1=Sj()
+s1.seteng(100)
+#s1.disp()
+print(s1.geteng())	# 100으로 바뀌었음 클래스 내부에서 함수를 만들고 설정하는것은 가능함 다만 외부에서는 바꿀수없음
+
+
+
+
+
+
+
+2. 상속
+
+
+ex)
+
 
 class Person:
-    def __init__(self,name,age):
-        self.name = name
-        self.age = age
+    def __init__(self):
+        self.name = '홍길동'
+        self.age = 25
 
 
-p1=Person('홍길동',25)
-p2=Person('김철수',33)
-
-print(p1.name)
-print(p1.age)
-
-print(p2.name)
-print(p2.age)
+class Korean(Person):
+    def __init__(self):
+        super().__init__()  #부모의 속성을 실행함
+        #(부모를 나타내는것을 super()함수)
+        self.lang = '한국어'
 
 
+p1=Person()
+
+print(p1.name,p1.age)
+
+k1=Korean()
+
+print(k1.name,k1.age,k1.lang)
 
 
 
-2. 클래스를 만들어주고 메소드를 만들어 사용한다.
-
-즉 인스턴트 해서 초기자료를 넘겨주고 클래스내부의 함수를 통해서 출력한다.
+3. 상속 -2
 
 
-#파이썬 중급 강의 
-# 클래스
 
 class Person:
-    def __init__(self,name,age):
-        self.name = name
-        self.age = age
-    def disp(self):
-        print(self.name,self.age)       # 메소드를 만들어줌
+    def __init__(self):
+        self.name = '홍길동'
+        self.age = 25   # 속성말고 함수도 상속이 가능
+    def say(self):
+        print() # or pass 설정가능
 
 
-p1=Person('홍길동',25)
-p2=Person('김철수',33)
+class Korean(Person):
+    def __init__(self):
+        super().__init__()
+        self.lang = '한국어'
+    def say(self):
+        print("안녕하세요.\n")  # 부모오 자식의 똑같은 메소드가 있다면
+                        # 자식의 메소드가 먼저 실행된다.
 
-p1.disp()
-p2.disp()
-
-
-
-
-
-3.
-
-#파이썬 중급 강의 
-# 클래스
-
-class Person:
-    def __init__(self):  # 매개변수를 받지않고 해보자
-        self.name = input('이름:')
-        self.age = int(input('나이:'))
-    def disp(self):
-        print(self.name+' : '+str(self.age))       
+class American(Person):
+    def __init__(self):
+        super().__init__()
+        self.lang = '영어'
+    def say(self):
+        print("Hello\n")
 
 
-li=[]           # li 리스트를 열고 반복문을 돌려서 집어넣고
-for i in range(3):  # 또 반복문을 이용해서 출력한다.
-    li.append(Person())
-for i in li:
-    i.disp()
+p1=Person()
+print(p1.name,p1.age)
+print()
+
+k1=Korean()
+print(k1.name,k1.age,k1.lang)
+k1.say()
+
+a1=American()
+print(a1.name,a1.age,a1.lang)
+a1.say()
+
 
 
 
