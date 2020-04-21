@@ -1,0 +1,260 @@
+#121.아래 for 문에서 print 문은 몇 번 호출 되는가?
+
+#for 변수 in ["가", "나", "다", "라"]:
+#    print(변수)
+
+# 출력 >> 가 나 다 라 4번
+
+
+
+#122.아래 코드의 실행 결과를 예측하라.
+
+#for 변수 in ["사과", "귤", "수박"]:
+#    print(변수)
+
+
+#출력 >> 사과 귤 수박 
+
+
+#123.아래 코드의 실행 결과를 예측하라.
+
+#for 변수 in ["사과", "귤", "수박"]:
+#    print(변수)
+#    print("--")
+
+
+# 출력 >> 사과 -- 귤 -- 수박 --
+
+
+
+#124.아래 코드의 실행 결과를 예측하라.
+
+#for 변수 in ["사과", "귤", "수박"]:
+#    print(변수)
+#print("--")
+
+# 출력 >> 사과 귤 수박 --
+
+
+#125.menu 리스트에는 판매중인 메뉴가 저장돼 있다. 아래와 같이 화면에 출력하라.
+
+#menu = ["김밥", "라면", "튀김"]
+#ex)
+
+#실행 예
+
+#오늘의 메뉴:김밥
+#오늘의 메뉴:라면
+#오늘의 메뉴:튀김
+
+
+#for i in menu:
+#    print("오늘의 메뉴 : ", i)
+
+
+
+#126.portfolio에는 보유중인 주식 목록이 저장돼 있다. 아래와 같이 화면에 출력하라.
+
+#portfolio = ["SK하이닉스", "삼성전자", "LG전자"]
+
+
+#실행 예
+
+#SK하이닉스 보유중
+#삼성전자 보유중
+#LG전자 보유중
+
+
+
+#for i in portfolio:
+#    print(i + " 보유중")
+
+
+
+#127.다음과 같이 애완 동물 리스트가 있을 때 애완 동물의 이름과 애완 동물의 글자수를 출력하라.
+
+#pets = ['dog', 'cat', 'parrot', 'squirrel', 'goldfish']
+
+#실행 예
+
+#dog 3
+#cat 3
+#parrot 6
+#squirrel 8
+#goldfish 8
+
+#for i in pets:
+#    print(i,len(i))
+
+
+#128.다음과 같이 판매가가 저장된 리스트가 있을 때 부가세가 포함된 가격을 화면에 출력하라. 단 부가세는 10원으로 가정한다.
+
+prices = [100, 200, 300]
+
+#실행 예
+
+#110
+#210
+#310
+
+#for i in prices:
+#    print(i+10)
+
+
+
+
+#129.prices 리스트에는 가격정보가 문자열로 저장돼 있다. prices 리스트에 저장된 모든 데이터를 파이썬 숫자 형으로 변환 후 화면에 출력하라.
+
+#prices = ["129,300", "1,000", "2,300"]
+#실행 예
+
+#129300
+#1000
+#2300
+
+#for i in prices:
+#    t= i.replace(',','')
+#    print(int(t))    
+
+
+
+#130.menu 리스트에는 음식이름이 뒤집혀 저장돼 있다. 이를 읽기 좋게 뒤집어서 아래와 같이 출력하라.
+
+#menu = ["면라", "밥김", "김튀"]
+
+#for i in menu:
+#    print(i[::-1])
+
+
+
+#131.my_list에는 네 개의 데이터가 저장되어 있다. 첫 번째 데이터를 제외하고 나머지 데이터를 한 라인에 하나씩 출력하라.
+
+#my_list = ["가", "나", "다", "라"]
+
+
+# 출력예:
+#나
+#다
+#라
+
+#for i in range(1,len(my_list)):
+#    print(my_list[i])
+
+
+#132.my_list의 데이터 중에서 홀수 번째 위치의 값을 화면에 출력하라.
+
+#my_list = [1, 2, 3, 4, 5, 6]
+
+
+#출력예:
+#1
+#3
+#5
+
+#for i in range(len(my_list)):
+#    if my_list[i] % 2 ==1:
+#        print(my_list[i])
+
+
+
+#133.my_list의 데이터 중에서 짝수 번째 위치의 값만을 화면에 출력하라.
+
+#my_list = [1, 2, 3, 4, 5, 6]
+
+#출력예:
+#2
+#4
+#6
+
+#for i in range(len(my_list)):
+#    if my_list[i] % 2 ==0:
+#        print(my_list[i])
+
+
+#134.my_list의 데이터를 아래와 같이 역방향으로 출력하라.
+
+#my_list = ["가", "나", "다", "라"]
+#my_list.reverse()
+
+#for i in my_list:
+#    print(i)
+
+
+#135.my_list에서 음수를 출력하라
+
+#my_list = [3, -20, -3, 44]
+
+#for i in range(len(my_list)):
+#    if my_list[i] < 0:
+#        print(my_list[i])
+#    else:
+#        pass
+
+
+#136.my_list에서 3의 배수를 출력하라.
+
+#my_list = [3, 100, 23, 44]
+
+#for i in range(len(my_list)):
+#    if my_list[i] % 3==0:
+#        print(my_list[i])
+
+
+#137.my_list에서 세 글자 이상의 문자를 화면에 출력하라
+
+#my_list = ["I", "study", "python", "language", "!"]
+
+
+#출력예:
+#study
+#python
+#language
+
+#for i in range(len(my_list)):
+#    if len(my_list[i]) > 2:
+#        print(my_list[i])
+
+
+#138.my_list에서 5보다 크고 10보다 작은 수를 화면에 출력하라
+
+#my_list = [3, 1, 7, 10, 5, 6]
+
+
+#for i in my_list:
+#    if 5 < i < 10:
+#        print(i)
+
+
+
+#139.my_list에서 10보다 크고 20 보다 작으면서 3의 배수일 경우 화면에 출력하라
+
+#my_list = [13, 21, 12, 14, 30, 18]
+
+
+#실행 예:
+#12
+#18
+
+#for i in my_list:
+#    if 10<i<20 and i %3 ==0:
+#        print(i)
+
+
+
+
+#140.my_list에서 3의 배수이거나 4의 배수를 화면에 출력하라
+
+#my_list = [3, 1, 7, 12, 5, 16]
+
+
+#실행 예:
+#3
+#12
+#16
+
+#for i in my_list:
+#    if i%3==0 or i%4==0:
+#        print(i)
+
+
+
