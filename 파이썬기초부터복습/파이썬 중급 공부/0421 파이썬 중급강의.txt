@@ -1,0 +1,196 @@
+1. 상속과 다양성
+
+ex)
+
+class Point:
+    def __init__(self):
+        self.x=int(input('x= '))
+        self.y=int(input('y= '))
+    def disp(self):
+        pass
+
+class Rect(Point):
+    def __init__(self):
+        super().__init__()
+        self.w=int(input('w= '))
+        self.h=int(input('h= '))
+    def disp(self):     # 다양성 !!
+        print('사각형 : ', self.x,self.y,self.w,self.h)
+
+class Circle(Point):
+    def __init__(self):
+        super().__init__()
+        self.r=int(input('r= '))
+    def disp(self):     # 다양성 !! super()을 이용하면 부모를 실행하고 자식을 실행할수있다.
+        print('원 : ', self.x,self.y,self.r)
+
+
+
+def main():
+    li = list()
+    while True:
+        s=input('1.사각형 2.원 3.조회 4.종료 : ')
+        if s=='1':
+            li.append(Rect())
+        if s=='2':
+            li.append(Circle())
+        if s=='3':
+            for i in li:
+                i.disp()
+        if s=='4':
+            break
+    print('프로그램을 종료합니다.')
+
+main()
+
+
+
+2. 클래스변수와 인스턴스 변수
+
+
+ex)
+
+
+class Person:
+    li = [] # 클래스 변수 !! 각각의 객체들이 공유한다.
+    def __init__(self,sp):      # sp = 상품
+        #self.li=[]
+        #self.li.append(sp)     # 한개씩밖에 못넣음
+        Person.li.append(sp)    # 이렇게 어느곳에도 속하지않게 해놓으면 여러개를 담을수 있음
+    def disp(self):
+        print(Person.li)
+# self 를 붙이면 인스턴스 변수로 각각의 리스트가 된다.
+# 따라서 공유할떄 클래스변수 선언이고 각각 리스트를 사용할경우
+# 인스턴스 변수로 사용하면 된다.
+
+p1=Person('우유')
+p1.disp()
+p2=Person('콜라')
+p2.disp()
+p3=Person('쥬스')
+p3.disp()
+
+
+
+3. 파일 읽고 쓰기
+
+
+ex)
+
+쓰기모드
+
+f = open('C:/abcd.txt','w')
+
+for i in range(1,8):
+    f.write('%d 번쨰 \n'%i)
+
+f.close()
+
+
+
+읽기모드
+
+
+f = open('C:/abcd.txt','r')
+
+m = f.readlines()   # 전부 리스트화가 된다.
+
+f.close()
+
+#print(m)
+
+for i in m:
+    print(i,end="")
+
+
+
+4. xml 만들기
+
+
+ex)
+
+<Person>
+	<name>홍길동</name>
+	<age>22</age>
+	<address>대구</address>
+</Person>
+
+이형태로 만들꺼임
+
+from xml.etree.ElementTree import *
+
+person=Element('Person')
+name = Element('name')
+name.text = '홍길동'
+person.append(name)
+age=Element('age')
+age.text = '23'
+person.append(age)
+SubElement(person,'adress').text='대구'
+
+dump(person)
+
+
+
+근데 바꾸고싶다.
+
+
+<Person>
+	<name>홍길동</name>
+	<no>17</no>
+	<age>22</age>
+	<address>대구</address>
+</Person>
+
+이렇게 바꾸고싶다.
+
+from xml.etree.ElementTree import *
+
+person=Element('Person')
+name = Element('name')
+name.text = '홍길동'
+person.append(name)
+age=Element('age')
+age.text = '23'
+person.append(age)
+SubElement(person,'adress').text='대구'
+no = Element('no')
+no.text = '17'
+person.insert(1,no) # 추가
+dump(person)
+
+
+
+
+삭제해주고싶다면. 	person.remove(no)   # 삭제 넣어주면 된다.
+
+
+또 Person이 태그이고 속성을 넣어주고싶다면
+
+
+from xml.etree.ElementTree import *
+
+person=Element('Person')
+name = Element('name')
+name.text = '홍길동'
+person.append(name)
+age=Element('age')
+age.text = '23'
+person.append(age)
+SubElement(person,'adress').text='대구'
+no = Element('no')
+no.text = '17'
+person.insert(1,no) # 추가
+person.remove(no)   # 삭제
+
+## 속성
+
+person.attrib['date']='2020-04-21'
+
+name.attrib['별명']='바보멍청이'
+
+## 이렇게 넣을수 있음
+dump(person)
+
+
+

@@ -1,0 +1,111 @@
+#파이썬 레벨 A 
+
+
+#풀이 코드
+
+a = int(input("n을 입력해주세요 : "))
+s=0
+for i in range(0,a+1):
+    s +=i
+print(s)
+
+
+
+#파이썬 레벨 B 
+
+#풀이코드   >> 일단 문제 이해가 안됨 문제자체가이해가안됨..
+
+s = 0
+
+n = int(input("1부터 n까지 n : "))
+m = int(input('중간합계 단위 m : '))
+for i in range(1,n+1):
+    s+=i
+    if i%m==0:
+        print("%10d까지 합계 %15d"%(i,s))
+print('합계',s)
+
+
+
+#파이썬 레벨 C 
+
+#풀이코드  이해 xx 나중에 다시이해 B하고 C는 나중에 다시 이해하기 
+
+s = 0
+
+n = int(input("1부터 n까지 n : "))
+m = int(input('중간합계 단위 m : '))
+for i in range(1,n+1):
+    s+=i
+    if i%m==0:
+        print(f'{i:10,d}까지 합계 {s:20,d')
+print(f'총합계:{s:,}')
+
+
+
+
+
+
+
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+#파이썬 레벨 A
+
+#풀이코드  
+
+fe = int(input('앞수:'))
+be = int(input('뒷수:'))
+
+if fe <=1000 and be <=1000:
+    print("%d + %d = %d"%(fe,be,fe+be))
+    print("%d - %d = %d"%(fe,be,fe-be))
+    print("%d x %d = %d"%(fe,be,fe*be))
+    print("%d / %d = %f"%(fe,be,fe/be))
+
+
+
+
+
+#파이썬 레벨 B
+
+#풀이코드  
+
+fe = int(input('앞수:'))
+be = int(input('뒷수:'))
+
+if fe <=1000 and be <=1000:
+    print("%d + %d = %d"%(fe,be,fe+be))
+    print("%d - %d = %d"%(fe,be,fe-be))
+    print("%d x %d = %d"%(fe,be,fe*be))
+    print("%d / %d = %.2f"%(fe,be,fe/be))
+    print("몫 : %d 나머지 : %d "%(fe/be,fe%be))
+
+
+
+
+
+#파이썬 레벨 C
+
+#풀이코드  
+
+fe = int(input('앞수:'))
+be = int(input('뒷수:'))
+
+if fe <=1000 and be <=1000:
+    print("{} + {} = {}".format(fe,be,fe+be))
+    print("{} - {} = {}".format(fe,be,fe-be))
+    print("{} x {} = {}".format(fe,be,fe*be))
+    print("{} / {} = {}".format(fe,be,fe/be))		# 이거 이러한형식으로하면 소수점을 줄이지못함 즉 
+    print("몫 : {} 나머지 : {} ".format(fe//be,fe%be))
+
+
+# f'{fe} / {be} = {fe/be:0.2f}' 형식으로 해주면 된다.
+
+
+
