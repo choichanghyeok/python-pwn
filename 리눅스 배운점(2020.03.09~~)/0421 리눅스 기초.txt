@@ -1,0 +1,105 @@
+1. 메일서버 구축
+
+apt-get -y install dovecot-pop3d 입력해 설치
+
+vi /etc/mail/sendmail.cf 열고 98번줄 가서
+
+Cwnaver.com 으로 수정하고 269번가서 Addr 이후를 다지운다. 270번줄도 M=Ea 빼고 다지운다.
+
+
+vi /etc/mail/access 라는 파일을 열고 맨밑에다가
+
+naver.com	RELAY
+daum.net		RELAY
+192.168.111	RELAY		#이렇게 해주면 메일을 서로 주고받을수 있다.
+
+을 적어준다.
+
+makemap hash /etc/mail/access < /etc/mail/access 를 적어서 입력해준다.
+
+vi /etc/dovecot/dovecot.conf  를 입력해서 30줄의 주석을 지워주고 33행의 주석도 제거해준다 그리고 바로 아랫줄에
+disable_plaintext_auth = no 이렇게 설정을 해주면된다.
+
+vi /etc/dovecot/conf.d/10-mail.conf 파일을 열고 121행의 주석을 제거하고 = 뒤에 mail을 입력해준다.(= mail) 166행 주석도 지워준다.
+
+그리고 사용자를 추가시킨다
+
+adduser lee
+
+입력하고 사용자계정을 만들어준다.
+
+systemctl restart sendmail 입력
+systemctl enable sendmail 입력	#상시가동
+
+systemctl restart dovecot 입력
+systemctl enable dovecot 입력	#상시가동
+
+
+이제 클라이언트 컴퓨터가 메일 - 에볼루션을 클릭하고 다음누르면서 과정을 진행한다. (서버종류 pop) 
+받기
+서버 : mail.naver.com 포트 110
+보내기
+서버종류 SMTP
+서버 : mail.naver.com 포트 25
+
+
+이제 메일 작성해서 받을수 있는지 확인한다.
+
+
+서버 B에서 위와같이 똑같이 설정해준다.
+
+
+이러한식으로 메일을 서로 주고받을수있다 이런식으로 메일서버를 구축할수있다.
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+웹 메일의 설치 및 사용
+
+>> 웹브라우저에서 메일을 사용하는 것을 '웹메일' 이라고 함
+
+> 라운드 큐브라고 불리는 우분투에서 제공
+
+라운드 큐브는 php로 작성되었고 센드메일 및 IMAP 서버를 기반으로 하는 웹메일 프로그램
+
+ex)네이버 메일
+
+라운드큐브 웹메일 설치
+
+apt-get -y install dovecot-imapd lamp-server^ 를 입력해서 설치해준다.
+
+그리고 root 비밀번호 기억할수있게 설정
+
+웹환경이 설정됨.
+
+이제 웹메일 설치
+
+apt-get -y install roundcube 입력해서 설치
+
+설정 > 예  >  암호 쉽게입력 > 
+
+그리고 vi /etc/apache2/conf.enabled/roundcube.conf 입력
+
+3번쨰 줄게 주석을 없애주고 roundcube 부분을  webmail로 바꾸어준다.
+5행 아래에 AddType		application/x-httpd-php	.php 입력
+
+/etc/roundcube/config.inc.php 입력하고 35행에 '' 안에  'localhost'; 입력
+
+
+
+systemctl restart apache2 입력
+systemctl enable apache2 입력
+
+vi /etc/bind/naver.com.db 입력하고
+
+아래에 
+
+www	IN	A	192.168.111.100 입력
+
+systemctl restart bind9 입력
+
+그리고 nslookup 으로 잘응답하는지 확인
+
+그리고 이제 각서버들을 접속해서 웹메일함과 웹메일을 보내봄으로써 잘작동하는지 확인한다.
+
