@@ -1,0 +1,260 @@
+#141. my_list 에서 대문자만 화면에 출력하라.
+
+#my_list = ["A", "b", "c", "D"]
+
+#실행 예:
+#A
+#D
+
+#print(my_list[0])
+#print(my_list[3])
+
+#print("A.isupper()", "A".isupper())
+#print("a.isupper()", "a".isupper())
+
+
+#142.my_list 에서 소문자만 화면에 출력하라.
+
+#my_list = ["A", "b", "c", "D"]
+
+
+#실행 예:
+#b
+#c
+
+#print(my_list[1])
+#print(my_list[2])
+
+
+
+#143.문자열의 upper() 메서드는 문자열을 대문자로 변경하고, lower() 메서드는 소문자로 변환한다.
+
+#>> 'korea'.upper()
+#KOREA
+#>> 'KOREA'.lower()
+#korea
+#리스트의 문자를 대문자는 소문자로, 소문자는 대문자로 변환하라.
+
+#my_list = ["A", "b", "c", "D"]
+
+#실행예:
+#aBCd
+
+#for i in my_list:
+#    if i.isupper():
+#        print(i.lower(),end='')
+#    else:
+#        print(i.upper(),end='')
+
+
+
+#144.파일 이름이 저장된 리스트에서 확장자를 제거하고 파일 이름만 화면에 출력하라. (힌트: split 메서드를 사용)
+
+#file_list = ['hello.py', 'ex01.py', 'ch02.py', 'intro.hwp']
+
+
+#실행예:
+#hello
+#ex01
+#ch02
+#intro
+
+
+#for i in file_list:
+#    print(i.split('.')[0])  #split > 문자열 나누기
+
+
+#145.파일 이름이 리스트에 저장되어 있을 때 확장자가 *.h인 파일을 출력하라.
+
+#filenames = ['intra.h', 'intra.c', 'define.h', 'run.py']
+
+#for i in filenames:
+#    if i.endswith('h'):     #endswith() 함수는 끝문자 찾기
+#        print(i)
+
+
+#146.파일 이름이 리스트에 저장되어 있을 때 확장자가 .h나 .c인 파일을 화면에 출력하라.
+
+
+#filenames = ['intra.h', 'intra.c', 'define.h', 'run.py']
+
+#실행예:
+#intra.h
+#intra.c
+#define.h
+
+#for i in filenames:
+#    if i.endswith('h'):
+#        print(i)
+#    if i.endswith('c'):
+#        print(i)
+
+
+#147.my_list에서 양수만 new_list 이름의 리스트에 저장하라.
+
+#my_list = [3, -20, -3, 44]
+
+
+#실행예:
+#>> new_list
+#[3, 44]
+
+#new_list = []
+#for i in my_list:
+#    if i >0:
+#        new_list.append(i)
+
+#print(new_list)
+
+
+
+#148.my_list 에서 대문자만을 upper_list에 저장하라.
+
+#my_list = ["A", "b", "c", "D"]
+
+#실행 예:
+#>> upper_list
+#["A", "D"]
+
+#upper_list =[]
+
+#for i in my_list:
+#    if i.isupper():
+#        upper_list.append(i)
+#print(upper_list)
+
+
+#149.my_list의 값을 sole_list에 저장하라. 단, 중복된 값은 제거한다.
+
+#my_list = [3, 4, 4, 5, 6, 6]
+
+#실행 예:
+#>> sole_list
+#[3, 4, 5, 6]
+
+#sole_list =list(set(my_list))
+
+#print(sole_list)
+
+
+
+#150.내장 함수를 사용하지 않고 반복문을 사용해서 my_list에 저장된 모든 수의 합를 출력하라
+
+#my_list = [3, 4, 5]
+
+#출력예:
+#12
+
+
+#su =0
+#for i in my_list:
+#    su +=i
+
+#print(su)
+
+
+
+#161.클래스와 인스턴스의 차이점에 대해서 서술하라.
+
+#  클래스는 객체를 구현하기위한 설계도 이고
+#  인스턴스는 클래스를 통해 생성된 실체를 인스턴스라고함
+
+#162.비어있는 사람 (Human) 클래스를 "정의" 하라.
+
+#class Human:
+#     pass
+
+
+#163.사람 (Human) 클래스를 "생성" 하고 areum 변수에 바인딩하여라.
+
+#areum = Human()
+
+#164.사람 (Human) 클래스에 "응애응애"를 출력하는 생성자를 추가하여라.
+
+#>>> areum = Human()
+#응애응애
+
+#class Human:
+#    def __init__(self):
+#        print("응애응애")
+
+#areum = Human()
+
+
+#165.사람 (Human) 클래스에 (이름, 나이, 성별)을 받는 생성자를 추가하여라.
+
+#class Human:
+#    def __init__(self,name,age,sex):
+#        self.name = name
+#        self.age = age
+#        self.sex = sex
+
+#areum = Human("아름",25,"여자")
+
+#166.165에서 생성한 인스턴스의 이름, 나이, 성별을 출력하여라. 인스턴스 변수에 접근하여 값을 얻어 오세요.
+
+
+#class Human:
+#    def __init__(self,name,age,sex):
+#        self.name = name
+#        self.age = age
+#        self.sex = sex
+
+
+#areum = Human("아름",25,"여자")
+#print("이름:%s, 나이:%d, 성별:%s" % (areum.name, areum.age, areum.sex))
+
+
+#167.사람 (Human) 클래스에서 이름, 나이, 성별을 출력하는 who() 메소드를 구현하여라.
+
+## 고정
+#class Human:
+#    def __init__(self,name,age,sex):
+#        self.name = name
+#        self.age = age
+#        self.sex = sex
+#    def who(self):
+#        print("이름: %s, 나이: %d, 성별: %s"%(self.name,self.age,self.sex))
+
+#areum = Human("아름",25,"여자")
+#areum.who()
+
+#168.람 (Human) 클래스에 (이름, 나이, 성별)을 받는 setInfo 메소드를 추가하여라.
+
+#class Human:
+#    def setInfo(self,name,age,sex):
+#        self.name = name
+#        self.age = age
+#        self.sex = sex
+
+#areum = Human()
+#areum.setInfo("아름", 25, "여자")
+
+
+#169.사람 (human) 클래스에 "나의 죽음을 알리지 말라"를 출력하는 소멸자를 추가하여라.
+
+#class Human:
+#    def __del__(self):
+#        print("나의 죽음을 알리지 말라")
+
+#areum = Human()
+#del areum          #del 소멸 ( 소멸자 발동 )
+
+
+#170.아래와 같은 에러가 발생한 원인에 대해 설명하여라.
+
+#class OMG : 
+#    def print() :
+#        print("Oh my god")
+
+#>>> >>> myStock = OMG()
+#>>> myStock.print()
+#TypeError Traceback (most recent call last)
+#<ipython-input-233-c85c04535b22> in <module>()
+#----> myStock.print()
+
+#TypeError: print() takes 0 positional arguments but 1 was given
+
+ # 함수명을 입력하고 () 으로 두었기떄문에 오류가 떴다
+ # 클래스를 만들고 함수 즉 초기자를 만들면 자기자신 즉 
+ # self 를 설정 해주어야한다.
