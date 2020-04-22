@@ -1,0 +1,86 @@
+
+암호 만들기
+
+#파이썬 중급 예제 A
+
+print("문자를 받아 그것을 유니코드로 출력합니다.")
+
+while True:
+    ch = input("문자를 입력해 주세요 : ")
+    print("글자 하나 : ", ord(ch))
+
+
+
+
+#파이썬 중급 예제 B
+
+print("문자를 받아 그것을 유니코드로 출력합니다.")
+
+while True:
+    ch = input("문자를 입력해 주세요 : ")
+    if ch == '':
+        break
+    print("글자 하나 : ", ord(ch))
+    
+
+#파이썬 중급 예제 C
+
+print("문자를 받아 그것을 유니코드로 출력합니다.")
+
+while True:
+    ch = input("문자를 입력해 주세요 : ")
+    if not ch: break		# 이렇게 한줄로 줄여 쓸수있음
+    for i in ch:
+        print(ord(i),end=' ')
+    print()
+
+
+
+이제 암호 해독
+
+#파이썬 중급 예제 A
+
+print("유니코드를 받고 그것을 문자로 출력합니다.")
+
+while True:
+    ch = int(input("코드를 입력해주세요 : "))
+    print("글자 하나 : ", chr(ch))
+
+
+
+
+
+
+
+#파이썬 중급 예제 B
+
+print("유니코드를 받고 그것을 문자로 출력합니다.")
+
+while True:
+    ch = int(input("코드를 입력해주세요 : "))
+    if not ch: break
+    print("글자 하나 : ", chr(ch))
+    
+
+
+
+
+#파이썬 중급 예제 C
+
+print("유니코드를 받고 그것을 문자로 출력합니다.")
+
+while True:
+    line = input("코드를 입력해주세요 : ")
+    codeList = line.split() # 입력을 받으면 split 로 문자열을 나누어줌
+    print(codeList)
+    if not line: break
+    for i in codeList:
+        print(chr(int(i)),end=' ')
+    print()
+    
+
+
+
+
+
+
