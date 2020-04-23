@@ -1,0 +1,297 @@
+1. xml 파일 읽기
+
+from xml.etree.ElementTree import *
+
+person=Element('Person')
+name = Element('name')
+name.text = '홍길동'
+person.append(name)
+age=Element('age')
+age.text = '23'
+person.append(age)
+SubElement(person,'adress').text='대구'
+
+#dump(person)
+ElementTree(person).write('c:/person.xml')
+
+
+이렇게 위에 	" ElementTree(person).write('c:/person.xml') " 이 한줄로 파일을 생성할수 있다.
+
+그리고
+
+import xml.etree.ElementTree as ET
+
+tree = ET.parse('c:/person.xml')    # 경로 입력
+
+root = tree.getroot()
+
+#print(root.tag)
+
+for i in root:
+    print(i.tag,i.text)
+
+형식으로
+
+name 홍길동
+age 23
+adress 대구
+
+을 출력 가능하다.
+
+
+
+
+
+2. JSON 다루기
+
+@@JSON 만들기
+
+import json
+
+li = {'name':'홍길동','kor':77,'eng':90,'mat':70},\
+    {'name':'김철수','kor':87,'eng':82,'mat':84},\
+        {'name':'이영희','kor':90,'eng':85,'mat':74}
+
+#print(li)
+
+with open('c:/bbb.json','w') as f:
+    json.dump(li,f,ensure_ascii=False)	# 인코딩하는데 글이 깨지지않도록 ascii 를 해준다.
+
+
+@@JSON 읽기
+
+
+import json
+
+with open('c:/bbb.json','r') as f:		# bbb.josn info 로 읽고 내용을 반복문을 돌리고 k,v 와 i.items()로 k,v를 쌍으로 이룬다.
+    info = json.load(f)
+for i in info:
+    #print(i)			# 그리고 k,v 를 출력
+    for k,v in i.items():
+        print(k,v)
+    print('-'*30)
+
+
+
+
+3. SQLite
+
+SQLLite 브라우저 검색해서 파일 설치
+
+그리고 import  sqlite3 을 적어놓고 이제 사용한다.
+
+
+
+@@ SQL라이트를 배우고 외부 DB MYSQL ,마리아 DB ,오라클 등등 파이썬과 연동해서 쓴다. @@
+
+
+
+
+##
+파이참 이용
+
+테이블 생성하기전에 모듈만들기
+
+import sqlite3
+
+def getConn():
+    conn = sqlite3.connect('c:/bbbaaa.db')     # 접속
+    return conn
+
+
+
+##테이블 생성 방법
+
+
+from workpy.lib.db.dba import getConn		#모듈 연결
+
+
+def create_table():
+    conn = getConn()
+    cur = conn.cursor()     #아래 테이블
+    cur.execute('''create table test(name text,kor int, eng int, mat int''')
+    conn.commit()       # 적용하다.
+    conn.close()        # 닫아주어야함
+
+
+if __name__=='__main__':
+    create_table()
+
+
+
+
+
+@@테이블안에 insert하는방법
+
+
+import sqlite3
+from workpy.lib.db.dba import getConn
+def insert_b():
+    conn = getConn()
+    cur = conn.cursor()
+    cur.execute('''
+    insert into test values('홍길동',80,90,100)
+    ''')
+    conn.commit()
+    conn.close()
+
+def insert_c():
+    conn = getConn()
+    cur = conn.cursor()
+    ins_sql = 'insert into test values(?,?,?,?)'    # 동적쿼리
+    cur.execute(ins_sql, ('김철수',77,88,99))   #튜플형식으로 들어감
+    conn.commit()
+    conn.close()
+    
+if __name__=='__main__':
+    #insert_b()
+    insert_c()
+
+
+
+이렇게 하고 DB브라우저 들어가서 새로고침하면서 확인하기.
+
+또 새로 추가한다고 생각한다면.
+
+import sqlite3
+from workpy.lib.db.dba import getConn
+def insert_b():
+    conn = getConn()
+    cur = conn.cursor()
+    cur.execute('''
+    insert into test values('홍길동',80,90,100)
+    ''')
+    conn.commit()
+    conn.close()
+
+def insert_c():
+    conn = getConn()
+    cur = conn.cursor()
+    ins_sql = 'insert into test values(?,?,?,?)'    # 동적쿼리
+    cur.execute(ins_sql, ('김철수',77,88,99))   #튜플형식으로 들어감
+    conn.commit()
+    conn.close()
+
+
+@@@ @ @@@@ 이부분을 추가한다
+def insert_d():
+    conn = getConn()
+    cur = conn.cursor()
+    ins_sql = 'insert into test values(?,?,?,?)'    # 동적쿼리
+    li = [('김철수',77,88,99),('김수',72,84,94),('철수',71,81,91)]
+    #cur.execute(ins_sql, ('김철수',77,88,99))   #튜플형식으로 들어감
+    cur.executemany(ins_sql,li) #한개면 execute 인데 여러개 이므로 executemany 이다
+    conn.commit()
+    conn.close()
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+if __name__=='__main__':
+    #insert_b()
+    #insert_c()
+    insert_d()
+
+
+다시 새롭게 프로그램을켜서 새로고침을하면 리스트에있는 목록들이 갱신된다.
+
+
+
+
+
+----------------------*************************-------------------------------
+----------------------*************************-------------------------------
+
+
+SELECT 사용하기
+
+위에 만든것들을 파이썬으로 불러오기
+
+
+
+import sqlite3
+from workpy.lib.db.dba import getConn
+
+#기본
+def select_a():
+    conn = getConn()
+    cur = conn.cursor()
+    cur.execute('select*from test')
+    print('전체 데이터 출력하기')
+    rs = cur.fetchall()
+    for i in rs:
+        print(i)
+    conn.close()
+
+# 변형
+def select_b(num):      #def select_b(num, name) 라면
+    conn = getConn()
+    cur = conn.cursor()    # 홍길동자리 ? 로 대체  그리고 execute 내용이 튜플이 되어야한다. 
+    
+    # 즉 ,(name,)를 넣으면된다. 튜플이 아니라면 에러가 난다.
+    cur.execute('select*from test where name="홍길동"')   #입력하는 문장이나 조건문을 넣을수있음
+    print('전체 데이터 출력하기')    #즉 MYSQL로 따지면 쿼리문 execute는 쿼리문이다.
+    rs = cur.fetchmany(num)     # 모든데이터를 가져오는것이 all
+    for i in rs:                # 지정해 놓은 거만 가져오려면 many 를 입력력
+       print(i)
+    conn.close()
+
+if __name__=='__main__':
+    #select_a()
+    select_b(1)
+    
+    #약간의 변형
+    #select_b(1,'홍길동')
+    
+
+
+
+
+***update 다루기****
+
+
+import sqlite3
+from workpy.lib.db.dba import getConn
+
+def update_a():
+    conn = getConn()
+    cur = conn.cursor()
+    up_sql = "update test set name='홍일점' where name = '홍길동'"    # 이름이 홍길동인것을 홍일점으로 바꾸겠다 라는 쿼리문
+    cur.execute(up_sql,('홍일점','홍길동'))
+    
+    conn.commit()
+    conn.close()
+
+if __name__=='__main__':
+    update_a()
+
+
+그리고 프로그램에 들어가서 >> DB브라우서 SQL라이트 키고 >> 데이터베이스 열기 우리가 만든 경로 파일을 열어주고 >> 데이터보기 누르면됨
+
+
+
+&&&& Delete 다루기 &&&&&
+
+삭제하는법
+
+import sqlite3
+from workpy.lib.db.dba import getConn
+
+def delete_a():
+    conn = getConn()
+    cur = conn.cursor()
+            # from 이후 내가 변경하고자할 프로그램이름 나같은경우는 bbbaaa
+    cur.execute('delete from test where eng<=?',(85,))
+    conn.commit()
+    conn.close()
+
+if __name__=='__main__':
+    delete_a()
+
+항상 바꾸고 새로고침 하면서 확인해보기 !!
+
+
+
+★★★★★★★★★★★★★★★나중에 따로 복습 한번 해보기 ~!!!!!★★★★★★★★★★★★★★★★★★★★★★★★★
+
+
+

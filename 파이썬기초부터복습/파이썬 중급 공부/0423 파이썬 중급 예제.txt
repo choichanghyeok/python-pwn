@@ -1,0 +1,47 @@
+# 파이썬 예제 A
+
+while True:
+    a = input('이름을 입력해주세요. >> ')
+    b = int(input('점수를 입력해주세요. >> '))
+    if b>=60:
+        print(a,"합격입니다.","축하합니다.")
+    else:
+        print(a,"불합격입니다.","다시 도전하세요.")
+
+
+
+
+# 파이썬 예제 B
+
+li =[]
+while True:
+    a = input('이름을 입력해주세요. >> ')
+    if a == '':
+        print("합격자 명단")
+        print(li)
+        break
+    b = int(input('점수를 입력해주세요. >> '))
+    if b>=60:
+        li.append(a)
+    else:
+        pass
+
+
+
+# 파이썬 예제 C
+
+li =[]
+while True:
+    a = input('이름을 입력해주세요. >> ')
+    if a == '':
+        print("합격자 명단")
+        print(li)
+        break
+    b = int(input('점수를 입력해주세요. >> '))
+    if b>=60:
+        li.append((a,b))
+    else:
+        pass
+
+
+
