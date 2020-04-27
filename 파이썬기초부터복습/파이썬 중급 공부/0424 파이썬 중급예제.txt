@@ -1,0 +1,157 @@
+1.
+
+# 파이썬 예제 A
+
+print("100이하의 정수를 입력해주세요.")
+a= int(input('점수 : '))
+b= int(input('점수 : '))
+c= int(input('점수 : '))
+
+su = a+b+c
+avg = su/3
+
+print('총점:',su) 
+print("평균: %.2f" %avg)
+
+
+
+
+
+
+# 파이썬 예제 B
+
+print("100이하의 정수를 입력해주세요.")
+su=0
+c=0
+while True:
+    a= input('점수 : ')
+    if not a:break
+    c +=1
+    su += int(a)
+
+avg = su/c
+print('총점:',su) 
+print("평균: %.2f" %avg)
+
+
+
+
+# 파이썬 예제 C
+
+print("100이하의 정수를 입력해주세요.")
+li = []
+su = 0
+while True:
+    a= input('점수 : ')
+    li.append(a)
+    if not a:break
+    su += int(a) 
+    mi = min(li)
+    mx = max(li)
+
+avg = su/len(li)
+print('총점:',su); print("평균: %.2f" %avg)
+print('최댓값:',mx,'최솟값:',mi)
+
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2.
+
+# 파이썬 예제 A
+
+while 1:
+    a = int(input('정수:'))
+    if a == 0:
+        break
+    if a %4==0:
+        print('True')
+    else:
+        print('False')
+
+
+
+
+
+
+
+# 파이썬 예제 B
+
+while 1:
+    a = int(input('정수:'))
+    if a == 0:
+        break
+    if a %4==0 and a%3 ==0:
+        print('common')
+    elif a%4==0 or a%3 ==0:
+        print('one')
+    else:
+        print('no')
+
+
+
+
+
+# 파이썬 예제 C
+
+while 1:
+    a = int(input('정수:'))
+    if a == 0:
+        break
+    if  a %400 ==0:
+        print('윤년')
+    elif a %100==0:
+        print('평년')
+    elif a %4==0:
+        print('윤년')
+    else:
+        print('평년')
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3.
+
+
+# 파이썬 예제 A
+while 1:
+    a = int(input('정수1 : '))
+    b = int(input('정수2 : '))
+    if a == 0 and b == 0:
+        break
+
+    if a>b:
+        print(a,">",b)
+    elif a<b:
+        print(a,"<",b)
+    else:
+        print("같음")
+
+
+
+
+
+# 파이썬 예제 C
+while 1:
+    a,b,c = map(int, input('세개의 정수 : ').split())
+    if a == 0 and b == 0 and c == 0:
+        break
+
+    if a>c:
+        a,c=c,a
+    elif a>b:
+        a,b=b,a
+    elif b>c:
+        b,c=c,b
+    print(b)
+
+
+
+
+
+

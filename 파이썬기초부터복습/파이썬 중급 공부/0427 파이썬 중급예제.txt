@@ -1,0 +1,104 @@
+# 파이썬 예제 A
+#출처 : 시간 여행자
+
+p = int(input("정수 1 입력 : "))
+
+print("입력한 수 보다 큰수 3개 ", p+1,p+2,p+3)
+
+
+
+
+# 파이썬 예제 B
+#출처 : 시간 여행자
+
+Li = input('소문자 5개 입력 : ').split()
+
+ch = input('비교할 소문자 : ')
+
+print('뒤에 나오는 알파벳')
+for c in Li:
+    if c > ch:
+        print('%s'%c)
+
+
+
+
+
+# 파이썬 예제 C
+#출처 : 시간 여행자
+
+Li = input('숫자 5개 입력 : ').split()
+
+ch = input('비교할 숫자 : ')
+cnt =0
+print('큰 수')
+for c in Li:
+    if int(ch) < int(c):
+        print('%s'%c)
+        cnt +=1
+if cnt == 0:
+    print('없음')
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+# 파이썬 예제 A
+#출처 : 시간 여행자
+
+
+
+while 1:
+    p = int(input('정수를 입력하세요. : '))
+    if p=='0': break
+    print('약수')
+
+    for i in range(1,p+1):
+        if p % i ==0:
+            print(i,end=' ')
+
+
+
+
+
+# 파이썬 예제 B
+#출처 : 시간 여행자
+
+
+Li = []
+while 1:
+    p = int(input('정수를 입력하세요. : '))
+    if p=='0': break
+    print('약수')
+
+    for i in range(1,p+1):
+        if p % i ==0:
+            Li.append(i)
+            print(i,end=',')
+    print('(',len(Li),"개)")
+    print()
+    Li = []
+
+
+
+
+
+
+# 파이썬 예제 C
+#출처 : 시간 여행자
+
+while 1:
+    n,m = map(int, input('정수 2개 : ').split())
+    if n==0 or m==0: break
+    print("공약수")
+
+    for i in range(1,n+1):
+        if n%i ==0 and m%i==0:
+            print(i,end=',')
+            gcd=i
+    print('최대공약수 %d'%gcd)
+
+
+
+

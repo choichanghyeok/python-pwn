@@ -1,0 +1,91 @@
+DB이용 관련에서는 필요할떄 다시 공부하기 
+
+MYSQL과 비슷함.!!
+
+
+1. 가변인자 전달 !!
+
+
+config={'user':'root',
+'password':'ss1234',
+'host':'127.0.0.1',
+'database':'test',
+'port':'3306'
+}       # 딕셔너리로 전달
+
+def get_Conn(config):
+    print(config)
+get_Conn(1,2,3,4)   # 튜플 형태로 전달하고싶다면 * 를 붙이면된다.
+
+        #*config>>튜플형태로 전달
+        # 만약 **가 붙는다면 
+        # get_Conn(a=1,b=2,c=3) 이고 ** 이라면 딕셔너리형태로 전달된다.
+
+        # 즉 * >> 튜플   ** >딕셔너리
+
+        #get_Conn(user='root',password='ss1234') 이렇게 입력하면 2개만 전달한다.
+
+        # 이걸 전달할려면 전부 입력하기에는 귀찮다. 따라서 
+        # **를 붙이고 변수를 실행하면 5개 그대로 전달된다/
+        # get_Conn(**config) 를 이용하면 편하다.
+
+
+
+★★★★★★★★★★중요!!★★★★★★★★★★★★★★★★★★★★중요!!★★★★★★★★★★
+
+2. 쓰레드 사용 !!
+
+import threading
+from datetime import datetime
+
+class Tread1(threading.Thread):
+    def run(self) -> None:
+        for i in range(1000):
+            now = datetime.now()
+            print(now)
+
+class Tread2(threading.Thread):
+    def run(self) -> None:
+        for i in range(10000):
+            print(i)
+
+
+
+
+여기서  t1 t2 작업을 번갈아면서 실행
+
+
+그리고 한가지더 필요한데.
+
+t2 쪽에 t2.daemon=False 추가함
+
+import threading
+from datetime import datetime
+
+class Tread1(threading.Thread):
+    def run(self) -> None:
+        for i in range(1000):
+            now = datetime.now()
+            print(now)
+
+class Tread2(threading.Thread):
+    def run(self) -> None:
+        for i in range(10000):
+            print(i)
+
+t1=Tread1
+t1.start()
+t2=Tread2
+t2.daemon=False
+t2.start()
+
+
+
+# 이러면 1000쪽이 작업을 종료해도 10000쪽이 작업이 남아있기떄문에 끝까지 작업을 수행한다.
+
+만약 t2.daemon=True 를 넣으면
+
+한쪽 작업이 종료하면 다른쪽도 종료한다.
+
+즉 daemon은 작업을 종속시킬것인지 등등 속성을 부여하는것이다.
+ 
