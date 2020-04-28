@@ -1,0 +1,32 @@
+# 프로그래머스 크레인 인형뽑기 게임 알고리즘
+
+
+def solution(board, moves):
+    answer = 0
+    mov = []			# 스택을 담을 리스트 공간 만들기
+    
+    for move in moves:		# moves 의 숫자의 칸을 가져가야하므로 반복문을 열고
+        for i in range(len(board)):	# board 길이 만큼 반복한다.
+            if board[i][move-1]:		# board[i] 가 [move-1] 일경우 다 mov append 로 보낸다.
+                mov.append(board[i][move-1])	
+                board[i][move-1] = 0		# 그리고 해당 란을 가져갔으므로 0으로 설정
+                if len(mov) > 1 and mov[-1] == mov[-2]:	# 또 길이가 최소 2 이상이고 같은 인형이있으면 2개가 터지도록 설정해준다.
+                    answer +=2			# 따라서 answer 에 2를 더한다 터진갯수 2개씩 터지므로 @@
+                    del mov[-2:]			# 그리고 터졌으므로 없애준다.
+                break
+            
+    
+    return answer
+
+
+
+1. mov :  [4, 3, 1, 1]			# 0이 아닌 숫자들을 걸러서
+2. mov :  [4, 3, 1, 1]			# mov[-1] == mov[-2] 이처럼 같은거 끼리 걸러서 터트린다
+3. mov :  [4, 3]			# 여기서 2개
+답 :  2	
+1. mov :  [4, 3, 3]			# 여기서도 마찬가지로 같은거를 터트린다
+2. mov :  [4, 3, 3]			# 여기서 2개 터트리면 총
+3. mov :  [4]
+답 :  4				# 4개를 터트리게된다 답은 4개
+
+

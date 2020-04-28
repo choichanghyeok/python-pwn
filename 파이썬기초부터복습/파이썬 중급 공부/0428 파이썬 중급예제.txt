@@ -1,0 +1,115 @@
+#파이썬 예제 A
+# 출처 : 시간 여행자
+
+
+while 1:
+    a = int(input('정수 : '))
+    if a ==0:break
+    if a % 2 ==0:
+        print("짝수")
+    else:
+        print('홀수')
+
+
+
+
+#파이썬 예제 B
+# 출처 : 시간 여행자
+
+a = input('정수 나열 : ').split()
+for i in a:
+    if int(i)%2==0:
+        print("%s 짝수"%i)
+    else:
+        print("%s 홀수"%i)
+
+
+
+#파이썬 예제 C
+# 출처 : 시간 여행자
+
+a = input('정수 나열 : ').split()
+
+li = 0     #짝수
+le = 0     #홀수
+for i in a:
+    if int(i)%2==0:
+        li +=int(i)
+    else:
+        le +=int(i)
+
+print('홀수의 합 : ',le); print('짝수의 합 : ',li)
+
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+#파이썬 예제 A
+# 출처 : 시간 여행자
+
+
+while 1:
+    a = input('출생년도 : ')
+    if a=='0':break
+
+    print('1의 자리:',a[3:4])
+
+
+
+
+#파이썬 예제 B
+# 출처 : 시간 여행자
+
+
+while 1:
+    a = input('출생년도 : ')
+    if a=='0':break
+
+    print("분배 요일 : ",end='')
+    if a[3:4] == '1' or a[3:4] =='6':
+        print("월")
+    elif a[3:4] == '2' or a[3:4] =='7':
+        print("화")
+    elif a[3:4] == '3' or a[3:4] =='8':
+        print("수")
+    elif a[3:4] == '4' or a[3:4] =='9':
+        print("목")
+    elif a[3:4] == '5' or a[3:4] =='0':
+        print("금")
+
+    print("토요일 금요일은 모두 분배 가능합니다. !!")
+    print()
+
+
+
+
+#파이썬 예제 C
+# 출처 : 시간 여행자
+
+while 1:
+    a = int(input('출생년도 : '))
+    if a==0:break
+
+    print("분배 요일 : ",end='')
+    day = a%5			##  월 화 수 목 금을 %5로 나누어서 했음
+    weekday = ['금','월','화','수','목',]
+    print(weekday[day])
+print('토,일은 모두 가능함')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
