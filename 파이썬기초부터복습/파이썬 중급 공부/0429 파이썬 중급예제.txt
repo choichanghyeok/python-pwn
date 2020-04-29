@@ -1,0 +1,130 @@
+# 파이썬 예제 A
+# 출처 : 시공여행자
+
+while 1:
+    a = input('생년월일:')
+    if a=='0':break
+
+    print(a[:4]+'년',end=' '); print(a[4:6]+'월',end=' '); print(a[6:]+'일','생');
+
+
+
+##맞는 풀이
+
+
+# 파이썬 예제 A
+# 출처 : 시공여행자
+
+while 1:
+    a = input('생년월일:')
+    if a=='0':break
+    year = a[:4]
+    mon = a[4:6]
+    day = a[6:]
+
+    print(year+'년 '+mon+'월 '+day+'일 생')
+
+
+
+
+
+
+
+
+# 파이썬 예제 B
+# 출처 : 시공여행자
+
+while 1:
+    a = input('생년월일:')
+    if a=='0':break
+    year = a[:4]
+    mon = a[4:6]
+    day = a[6:]
+    print(year+'년 '+mon+'월 '+day+'일 생')
+    p = int(input('기준 연도:'))
+
+    print((p-int(year)),'살')
+
+
+
+@@@@@ 
+위에 보다시피 나는 %d %s 연산자를 사용하지않고 코드를 짰으니 사용하고 코드를 짜는편이
+더 편하다 고로 이용하자.
+
+
+# 파이썬 예제 C
+# 출처 : 시공여행자
+
+import time
+while 1:
+    a = input('생년월일:')
+    if a=='0':break
+    year = int(a[:4])
+    mon = int(a[4:6])
+    day = int(a[6:])
+    now_year = int(time.strftime('%Y'))
+    print("%d년 %d월 %d일 생"%(year, mon, day))
+    print('%d살'%(now_year-year))
+
+
+
+
+
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+# 파이썬 예제 A
+# 출처 : 시공여행자
+
+
+while 1:
+    a = input('소문자 입력:')
+    if not a:break
+    print(a.upper())
+
+
+
+
+# 파이썬 예제 B
+# 출처 : 시공여행자
+
+
+while 1:
+    a = input('바꿀 문자열 입력:').split()
+    if not a:break
+    
+    for i in a:
+        print(i[0].upper()+i[1:],end=' ')
+    print()
+
+
+
+
+
+# 파이썬 예제 C
+# 출처 : 시공여행자
+
+
+while 1:
+    a = input('바꿀 문자열 입력:')
+    if not a:break
+    for i in a:
+        if i.isupper():
+            i=i.lower()
+        elif i.islower():
+            i=i.upper()
+        print(i,end='')
+    print()
+
+    
+
+    
+
+
+
+
