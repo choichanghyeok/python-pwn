@@ -1,0 +1,40 @@
+1. 행렬의 곱셈
+
+def solution(arr1, arr2):
+    answer = []			  # 답란 배열
+    
+    for i1 in range(len(arr1)):			# len(arr1) 만큼 반복
+        row = []
+        for i2 in range(len(arr2[0])):		# arr2 의 길이를 측정해야함 일일이 하나씩 다곱해야하므로
+            tmp = 0				# arr[0]의 길이를 구해야함
+            for i3 in range(len(arr1[0])):		# 이것도 마찬가지로 arr1[0]의길이를 구해야하고 tmp 변수를 통해 행렬을 구합니다.
+                tmp += arr1[i1][i3] * arr2[i3][i2]	# 이러한 식으로 계산후 tmp를 통해 row 로 보냄
+            row.append(tmp)			# row의 결과를 다시 answer배열에 넣고 answer을 리턴한다.
+        answer.append(row)
+    return answer
+    
+
+
+2. N개의 최소공배수
+
+def gcd(x,y):		# 최소 공배수 공식  x, y 의 최댓값과 최솟값으로 분류한다.
+    x,y=max(x,y),min(x,y)	# 그리고 최솟값 만큼 반복문을 돌리는데 
+    while y > 0:		# x,y  = y , x%y 를 계산하고 x를 반환하는것이 최소 공배수의
+        x,y = y,x%y		# 숫자를 구하는것이다.
+    return x
+
+def solution(arr):
+    while len(arr) !=1:		# 이제 arr 길이만큼 반복문을 돌리고
+        x=arr.pop()			# x를 pop() 하고 y를 pop() 하고 
+        y=arr.pop()			# 그대로 x,y 를 gcd 함수에 돌린다
+        z = gcd(x,y)			# 그리고 arr 주어진 배열 첫번쨰 란에
+        arr.insert(0,int(x*y/z))		# insert(0, int(x*y/z)) 만큼 해주면 최소공배수가 나온다.
+    answer = arr[0]			# 그리고 arr[0]가 최소공배수를 저장한 배열이기떄문에
+    return answer			# 그대로 변수에 저장하고 리턴해주면 된다.
+        
+
+
+
+
+
+    
