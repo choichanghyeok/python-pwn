@@ -1,0 +1,94 @@
+1.
+
+
+
+
+# 시공여행자 중급예제 A
+
+cnt = 0
+su = 0
+for i in range(5):
+    s = int(input("점수:"))
+    su +=s
+    cnt +=1
+
+avg = su / cnt
+print('평균점수 : ',avg)
+
+
+
+
+
+
+
+
+# 시공여행자 중급예제 B
+
+cnt = 0
+c = 0
+su = 0
+li = []
+for i in range(5):
+    s = int(input("점수:"))
+    su +=s
+    cnt +=1
+    li.append(s)
+
+avg = float(su) / cnt
+print('평균점수 : %0.1f점'%avg)
+
+for j in range(len(li)):
+    if li[j] < avg:
+        print(li[j])
+        c +=1
+print("평균 이하 %d명"%c)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 시공여행자 중급예제 C
+
+li = []
+su=0
+cnt = 0
+c = 0
+for i in range(5):
+    s = input('이름:')
+    s1 = int(input('점수:'))
+    cnt +=1
+    su += s1
+    li.append([s,s1])
+
+avg = float(su)/cnt
+print("평균점수:%0.1f점"%avg)
+
+for i in range(len(li)):
+    if li[i][1] < avg:
+        print(li[i][0],li[i][1])
+        c +=1
+
+print("평균이하:%d명"%c)
+
+
+
+
+
+
+
+
+
+
+
+
+

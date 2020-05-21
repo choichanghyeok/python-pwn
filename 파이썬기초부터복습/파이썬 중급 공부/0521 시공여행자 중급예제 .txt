@@ -1,0 +1,86 @@
+1. 
+22번 시작 5:50
+https://www.youtube.com/watch?v=CtgwQDsmO1E
+
+A 비율구하기
+
+
+시험 합격률 구하기
+
+입력 >> 시험 응시자수, 합격자수
+
+출력 >> 합격률 소수 2쨰자리까지 반올림 출력
+
+응시자수 : 1234
+합격자수: 612
+합격률 : 49.59%
+
+
+
+
+
+코드
+
+
+
+# 시공여행자 A
+
+s = int(input('응시자수:'))
+s1 = int(input('합격자수:'))
+
+avg = (float(s1)/s) *100
+
+print("합격률: %0.2f%%"%avg)
+
+
+
+
+# 시공여행자 B
+
+s = int(input('응시자수:'))
+
+for i in range(5):
+    s1 = int(input('%d번 문제 정답자수:'%(i+1)))
+    avg = (float(s1)/s) *100
+    print("정답률: %0.2f%%"%avg)
+
+
+
+## 다만 조건이 입력할때 마다이므로 나는 5번반복했지만 while문을 사용해서
+# 무한반복을 돌려도 좋다.
+
+
+
+
+
+# 시공여행자 C
+
+s = int(input('응시자수:'))
+li = []
+for i in range(5):
+    s1 = float(input('%d번 문제 정답자수:'%(i+1)))
+    li.append(s1)
+
+for k in range(len(li)):
+    avg = (li[k]/s) *100
+    print("정답률: %0.2f%%"%avg)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
