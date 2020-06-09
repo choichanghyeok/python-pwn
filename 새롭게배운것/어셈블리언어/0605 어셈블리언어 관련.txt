@@ -1,0 +1,140 @@
+1. add 와 sub
+
+
+##사용 예시
+
+mov eax,0
+
+add eax,10
+add eax,7
+
+mov ecx,0
+mov ecx,eax
+
+add ecx,eax
+add eax,ecx
+
+add dword ptr [402000],eax
+mov ecx ,[402000],
+
+add ax,cx
+add ax,[402000]
+
+mov dword ptr [402000], 0
+add dword ptr [402000], 10
+
+sub dword ptr [402000], 10
+
+
+
+
+
+
+## 레지스터로 주소지정!!
+
+
+예를들어  
+
+mov eax, 00402000 해주고
+
+mov dword ptr eax, 0 형식으로 해주면 된다.
+
+
+C언어처럼 어셈블리언어도 포인터형식으로 가능하다.
+
+MOV EAX,402000
+MOV DWORD PTR DS:[EAX],10
+MOV DWORD PTR DS:[402000],402004
+MOV EAX,DWORD PTR DS:[402000]
+MOV DWORD PTR DS:[EAX],12345678
+MOV DWORD PTR DS:[402000],0
+MOV DWORD PTR DS:[402004],402000
+MOV EBX,DWORD PTR DS:[402004]
+MOV DWORD PTR DS:[EBX],4
+
+
+[EBX] 가 왜 dword ptr 이냐 왜냐하면 ebx 가 int 형이기때문에 int는 4바이트 이므로
+
+레지스터의 메모리값을 이용해 접근
+
+mov eax,[ebx] 	[] 안에있는것은 주소로 취급
+
+
+
+##메모리 주소지정 방식
+
+오프셋 > 변위차(위치의 차이)를 나타내는 정수형
+> 메모리에서 쓰임
+
+MOV EBX,402000
+MOV BYTE PTR DS:[EBX],0
+MOV BYTE PTR DS:[EBX+1],1
+MOV BYTE PTR DS:[EBX+2],2
+MOV BYTE PTR DS:[EBX+3],3
+MOV BYTE PTR DS:[EBX+4],4
+MOV BYTE PTR DS:[EBX+5],5
+
+
+MOV ECX,0
+MOV BYTE PTR DS:[ECX+402000],CL
+INC ECX
+MOV BYTE PTR DS:[ECX+402000],CL
+INC ECX
+MOV BYTE PTR DS:[ECX+402000],CL
+
+
+MOV ECX,0
+MOV DWORD PTR DS:[ECX*4+402000],ECX		#MOV DWORD PTR DS:[ECX*4+EAX+402000],ECX 도됨
+INC ECX
+MOV DWORD PTR DS:[ECX*4+402000],ECX
+INC ECX
+MOV DWORD PTR DS:[ECX*4+402000],ECX
+
+
+
+규칙
+
+[ base 주소 + offset +index * scale ]
+
+레지스터 개수는 최대 2개 	index는 반드시 레지스터여야함!
+
+
+base 주소 : 메모리 기준 주소
+
+오프셋 : 거리
+
+index : 오프셋이랑 비슷함 
+
+scale : 자료형의 크기 
+
+
+MOV DWORD PTR DS:[ECX*4+EAX+402000],ECX 경우
+
+ECX >> index 부분
+
+*4 >> scale		(숫자값으로 항상 들어가야함)
+
+EAX,402000 >> 둘중하나가 오프셋이고 베이스주소인데 구분하는건 프로그램을 
+만드는 사람이 구분함
+
+
+인덱스를 쓰지않을떄는
+[ebx+eax] 사용가능  최대 레지스터 2개 사용가능하기 때문	
+
+
+정리
+
+base + offset + index *scale(imm)
+
+
+
+
+
+
+
+
+
+
+
+
+
