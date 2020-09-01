@@ -1,0 +1,30 @@
+# N - Queen
+# N * N 체스판
+
+N , ans= int(input()), 0
+
+# 개수와 대각선 변수
+
+a,b,c = [False] * N , [False]*(2*N-1) , [False]*(2*N-1)
+
+# 직선 /대각선, \대각선
+
+def solve(k):
+    global ans
+    if k == N:
+        ans +=1
+        return
+
+    for i in range(N):  
+        # a[i] 가로 세로   b[k+i] / 대각선   b[k-i+N-1] \ 대각선
+        if not (a[i] or b[k+i] or c[k-i+N-1]):
+            a[i] = b[k+i] = c[k-i+N-1] = True
+            solve(k+1)
+            a[i] = b[k+i] = c[k-i+N-1] = False
+solve(0)
+print(ans)
+
+    # 탐색이랑 비슷한 방식인듯
+    
+    
+    #출처 : https://rebas.kr/761
