@@ -1,0 +1,403 @@
+
+
+## 1. 연결
+
+1. NC
+
+가장 많이사용하는것이 NC 이고 NC는 remote(ip,PORT) 형식으로 연결한다.
+(ip는 string , PORT는 int 형)
+
+
+- p = remote(IP, PORT)
+
+ex)
+
+p = remote("localhost", 1234)
+
+p = remote('pwnable.kr', 9009)
+
+
+
+
+
+2. Local
+
+그다음 nc 다음으로 많이쓰는것이 Local은 process(PATH) 식으로 연결한다.
+(PATH 는 string )
+
+- p = process('실행할 파일')
+
+- p = process(executable = '실행할 파일', argv = ARGV)
+
+※ 인자를 주고 싶을 경우 위와 같이 표현하며 executable = 는 필수로 적어야 한다.
+
+※ 추가적으로 env, stderr도 전달 가능하다. (환경 변수, 표준 에러)
+
+※ argv는 리스트, env는 딕셔너리, stderr는 파일 형식으로 전달한다.
+
+※ argv의 첫 번째 값은 프로그램 명이라서 인자를 하나 주기 위해선 두 번째 위치에 인자를 넣어야 한다.
+
+ex) argv = ['vuln']
+
+      argv.append('argv1')
+
+      p = process(executable = 'vuln', argv = argv)
+
+​
+
+※ remote나, proceess 등을 반복적으로 실행하기 위해선 p.close()가 필수!
+
+
+
+3. SSH
+
+제일 많이 쓰지않지만 pwnable.kr 과 같이 특정사이트에서는 많이 쓰인다.
+ssh(USERNAME, IP , PORT, RASSWORD) 형식으로 연결한다.
+
+(USERNAME, IP , PASSWORD 경우 string 이고 PORT 는 int 이다.)
+단 ssh는 run이라는 함수가 있는데 이를 사용하여 쉘을 띄워주고 한다.
+
+
+- s = ssh(USERNAME, IP, port = PORT, password = PASSWORD)
+
+  p = s.run('실행할 파일')
+
+
+
+ex)
+
+p = ssh("test", "localhost", port = 1234, password = "test")
+
+또는
+
+p2 = p.run("/bin/sh")
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+## 2. 데이터 받기
+
+
+
+
+1. recvline()
+
+사용법
+
+tmp = p.recvline()
+passcode = tmp[tmp.find('.')+2:len(tmp)-1]
+
+or
+
+passcode = p.recvline()[10:]
+
+식으로 passcode를 받으수 있지만 이러한식으로는 추천하지않는다.
+
+
+
+- p.recvline()
+
+한 줄만큼 데이터를 받는다. (\n까지)
+
+ex) print p.recvline()[:-1] (\n까지 데이터를 받고 \n 전 까지 출력)
+
+
+
+
+2. recvuntil(str)
+
+str 까지 받아온다.
+
+아래 recv 랑 혼합하여 주로 사용한다.
+
+
+
+- p.recvuntil(str)
+
+ex) print p.recvuntil(' ')
+
+​
+
+※ remote, process 함수 등의 반환 값을 다른 변수로 받았으면 해당 변수로 부터 recv 함수들에 접근하면 된다.
+
+
+
+
+3. recv(int)
+
+int 만큼만 받아온다.
+
+p.recvuntil('Passcode: ')
+passcode = p.recv(2048)
+
+이러한 식으로 passcode를 받을수 있고 더 간단하므로 이런케이스에서는 주로 이렇게 사용한다.
+
+그외 recvall 등 있지만 주로 위의 3가지만 사용한다.
+
+
+
+- p.recv(int)
+
+int 만큼 데이터를 받는다. (잘 안 쓴다.)
+
+
+ex) print p.recv(2048)
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+## 3. 데이터 전송
+
+
+3-1 send (★)
+
+- p.send(str)
+
+데이터를 전송한다.
+
+ex) p.send('1234')
+
+​
+
+3-2 sendline (★)
+
+- p.sendline(str)
+
+데이터를 전송하며 마지막에 \n을 포함한다.
+
+보통 \n까지 입력을 받는 프로그램이 많아서 자주 사용한다.
+
+ex) p.sendline('1234')
+
+​
+
+3-3 sendafter
+
+- p.sendafter(str1, str2)
+
+str1은 받을 값, str2는 전송할 데이터이다.
+
+recvuntil과 send를 합쳐 놓은 것으로 데이터 전송을 위해선 이전의 데이터를 모두 받아야 하기 때문에 코드 두 줄을 한 줄로 줄일 수 있다.
+
+ex) p.sendafter(':', 'Send Message!')
+
+​
+
+3-4 sendlineafter
+
+- p.sendlineafter(str1, str2)
+
+sendafter와 같은 원리이다.
+
+ex) p.sendlineafter(':', 'Send Message!')
+
+
+
+
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+## 4. 패킹 & 언패킹 & 상호작용
+
+
+
+4-1-1 p32 (★)
+
+- p32(int)
+
+32bit 리틀 엔디안으로 바꿔준다.
+
+예를 들면 0x12345678이 \x78\x56\x34\x12가 된다.
+
+ex) p32(0x12345678)
+
+​
+
+4-1-2 p64 (★)
+
+- p64(int)
+
+64bit 리틀 엔디안으로 바꿔준다.
+
+ex) p64(0x1234)
+
+​
+
+4-2-1 u32 (★)
+
+- u32(str)
+
+32bit 리틀 엔디안으로 패킹된 문자열을 언패킹 해서 int형으로 반환
+
+주로 메모리 릭을 하여 얻은 주소에 사용한다.
+
+ex) leak = p.recv(4).ljust(4, "\x00")
+
+      print hex(u32(leak))
+
+​
+
+4-2-2 u64 (★)
+
+- u64(str)
+
+u32와 같은데 64비트 용이다
+
+ex) leak = p.recv(8).ljust(8, "\x00")
+
+      print hex(u64(leak))
+
+​
+
+※ u32 또는 u64를 쓰기 위해서 ljust는 필수이다. 대충 간단하게 설명하자면, u64를 사용하려면 총 8byte로 구성되어 있어야 하는데, leak 주소가 8byte를 모두 차지하고 있지 않으면 빈 공간을 \x00 으로 채워주는 용도라고 생각하면 된다.
+
+​
+
+4-3 interactive (★★)
+
+- p.interactive() 
+
+가장 중요하다고 볼 수 있는 것으로, 거의 모든 포너블 문제 마지막에 작성하는 코드
+
+특정 행위를 함으로써 서버에 출력된 flag 값을 볼 때나, 서버에 띄운 셸과 상호 작용할 때 사용
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+## 5. ELF
+
+
+
+5-1 ELF (★)
+
+- e = ELF('ELF 파일 명')
+
+문제 파일, 라이브러리 파일 등에서 offset, PLT, GOT, /bin/sh 위치 등을 알 수 있다.
+
+추가적으로 해당 부분이 실행되면 자동으로 보호 기법까지 확인해서 출력해준다.
+
+​
+
+5-1-1 symbols (★)
+
+- e.symbols['함수 명']
+
+symbols 주소를 반환한다.
+
+사용자 정의 함수의 symbol이 남아 있는 경우, libc에서 offset 값을 구할 때 사용한다.
+
+ex) print hex(e.symbols['winner'])
+
+​
+
+5-1-2 plt (★)
+
+- e.plt['함수 명']
+
+plt 주소를 반환한다.
+
+ex) print hex(e.plt['printf'])
+
+​
+
+5-1-3 got (★)
+
+- e.got['함수 명']
+
+got 주소를 반환한다.
+
+ex) print hex(e.got['exit'])
+
+​
+
+5-1-4 search + next (★)
+
+- e.search('검색할 문자열').next()
+
+주로 라이브러리 파일에서 /bin/sh 위치를 찾을 때 사용한다.
+
+ex) e.search('/bin/sh').next()
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+## 6. shellcraft
+
+1. 일반 32bit 셸 코드 생성
+
+- asm(shellcraft.i386.sh())
+
+​
+
+2. 일반 64bit 셸 코드 생성
+
+- asm(shellcraft.amd64.sh(), arch = 'amd64')
+
+64bit는 arch 값을 지정 해주어야 한다.
+
+context.arch = 'amd64'를 위에 추가해주면 안 써도 된다.
+
+​
+
+3. 원하는 셸 코드 생성
+
+- asm(shellcraft.함수(인자))
+
+64bit의 경우 arch 값을 지정 해주어야 한다.
+
+보통 context.arch = 'amd64' 를 사용한다.
+
+
+4. 어셈블리 실행
+
+- run_assembly(str)
+
+인자로는 문자열 형식의 어셈블리어를 넣는다.
+
+어셈블리어를 주고 복잡한 연산을 한 뒤 반환 값을 묻는 문제 등에서 활용 가능하다.
+
+
+
+## 기타 ( 나머지 )
+
+
+1. context.log_level
+
+- context.log_level = '값'
+
+값에 들어가는 내용 중 사용해본 것은 debug, error이다.
+
+주로 debug를 사용하는데, 실행한 프로그램 진행 과정을 볼 수 있다.
+
+error는 연결과 종료같은 쓸 데 없는 과정을 제외하고 사용자가 print로 출력한 값만 보고 싶을 때 사용한다.
+
+​
+
+2. fmtstr_payload
+
+- payload = fmtstr_payload(offset, {덮어쓸 주소:덮어쓸 값})
+
+FSB exploit을 자동으로 생성해준다.
+
+AAAA %x %x %x %x %x를 입력했을 때 41414141이 4번만에 떴다면 offset에 4를 입력해주면 된다.
+
+
+
+
+
+
+
+
+
+
