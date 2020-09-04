@@ -1,0 +1,19 @@
+풀이
+
+
+# 01 타일
+
+import sys			# sys 함수로 빠르게 받음
+input = sys.stdin.readline
+
+num = int(input())
+dp = [0] * 1000001			#(N ≤ 1,000,000) 이므로 N+1 개
+
+al[1] = 1				# 규칙을보면 피보나치이기떄문에 1과 2 설정
+al[2] = 2
+
+for i in range(3,num+1):	
+    al[i] = (al[i-1] + al[i-2])%15746	#  N인 모든 2진 수열의 개수를 15746으로 나눈 나머지를 출력
+print(al[num])
+
+
