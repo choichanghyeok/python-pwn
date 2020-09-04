@@ -1,0 +1,14 @@
+풀이
+
+
+# 피보나치의 수
+
+num = int(input())
+
+f0,f1 = 0 , 1
+
+for i in range(num):
+    f0,f1 = f1,f0+f1
+print(f0)
+
+
