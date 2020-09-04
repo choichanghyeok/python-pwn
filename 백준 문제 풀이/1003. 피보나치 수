@@ -1,0 +1,64 @@
+내 풀이 ( 시간초과 )
+
+def solve(n):
+    global zero_cnt,first_cnt
+
+    if n==0:
+        zero_cnt +=1
+        return 0
+
+    if n==1:
+        first_cnt +=1
+        return 1
+
+    return solve(n-1)+ solve(n-2)
+
+
+Test = int(input())
+
+
+for i in range(Test):
+    zero_cnt = 0
+    first_cnt = 0
+    solve(int(input()))
+    print(zero_cnt,first_cnt)
+
+
+
+
+정답 풀이
+
+
+# 피보나치의 수
+
+
+
+def cnt_fib(n):
+    zero_cnt = [1,0]
+    frist_cnt = [0,1]
+
+    # 처음 0과 1 설정
+
+    if n <=1:
+        return
+
+    for i in range(2, n+1):
+        zero_cnt.append(zero_cnt[i-1] + zero_cnt[i-2])
+        frist_cnt.append(frist_cnt[i-1] + frist_cnt[i-2])
+        # 처음 0과 1을 제외하고 나머지는 피보나치로 구하면 됨.
+
+    return zero_cnt , frist_cnt
+
+n = int(input())    # test case 
+
+zero_cnt , frist_cnt = cnt_fib(40)  
+# N이 주어진다. N은 40보다 작거나 같은 자연수 또는 0이다.
+# 이므로 cnt_fib(40)
+
+#print('1.',zero_cnt)
+#print('2.',frist_cnt)
+
+for _ in range(n):
+    m = int(input())    # 리스트에서 골라옴
+    print("%d %d" %(zero_cnt[m],frist_cnt[m]))
+
