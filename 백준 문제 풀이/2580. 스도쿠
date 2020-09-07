@@ -1,0 +1,59 @@
+# 스도쿠
+
+# 스도쿠 배열 만들어주고
+sudoku = [list(map(int,input().split())) for _ in range(9)]
+
+zero = [(i,j) for i in range(9) for j in range(9) if sudoku[i][j]==0]
+# 0즉 내가 넣어야할 정답의 위치
+
+def is_pr(i,j):
+    proming = [1,2,3,4,5,6,7,8,9]
+    # 한개씩 넣어야할 숫자들
+
+    # 행렬 검사
+    for k in range(9):
+        if sudoku[i][k] in proming:
+            proming.remove(sudoku[i][k])    # 그 3*3 행의 모든숫자를 살펴보고 있는숫자를 다제거해서 답을 찾는 시스템
+        if sudoku[k][j]in proming:
+            proming.remove(sudoku[k][j])
+
+    # 3*3 박스 검사 제대로 스도쿠의 형태가 갖춰있는지 확인
+
+    i //=3
+    j //=3
+
+    for p in range(i*3, (i+1)*3):
+        for q in range(j*3,(j+1)*3):
+            if sudoku[p][q] in proming:
+                proming.remove(sudoku[p][q])
+
+    return proming
+flag = False
+# 플래그함수 답을 구했는가 못구했는가?
+
+def DPS(y):
+    global flag     # 답을 구했는지 안구했는지 체크하기위해 판별함수에서 만들어놓았던 flag 함수를 쓰기위해 전역변수 선언
+
+    if flag:        # True 라면 리턴
+        return
+
+    if y == len(zero):      # 재귀함수를 계속 돌려서 구하고자하는 것과 같아지면 리스트를 제거하고 *r 출력
+        for r in sudoku:
+            print(*r)
+        flag = True     # flag True 후 리턴
+        return
+
+    else:
+        (i,j) = zero[y]     # 그것이 아니라면 zero에 (i,j) 저장하고 이것이 맞는지 확인한다. 
+
+        proming = is_pr(i,j)        # 그리고 위에서 했던과정이 맞는지 확인한다. 
+
+        for n in proming:   # 반복문으로 하나하나씩 비교한다 sudoku[i][j] 저장 위의 if문이 나올떄 까지 계속해서 반복
+            sudoku[i][j] = n    
+            DPS(y+1)            # 재귀함수
+            sudoku[i][j] = 0    # 과정을 마치고 초기화
+
+DPS(0)
+
+
+# 출처 : https://claude-u.tistory.com/360 
