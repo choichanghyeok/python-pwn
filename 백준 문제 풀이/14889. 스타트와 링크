@@ -10,7 +10,26 @@ for _ in range(N):
 
 number_list = [i for i in range(N)]     # 멤버들의 총 리스트
 
-res = float('inf')  #???
+res = float('inf')  #???    # 능력치 차이 최소값
+
+
+'''
+>>> float('inf')          # 양의 무한대
+inf
+
+>>> float('-inf')         # 음의 무한대
+-inf
+
+>>> 1e100 < float('inf')  # 무한대는 다른 모든 실수보다 크다
+True
+
+>>> 1e309                 # 너무 큰 실수는 무한대로 평가된다
+inf
+
+>>> 1e-324                # 너무 0에 가까운 실수는 0으로 평가된다
+0.0
+
+'''
 
 def solve():
     global res
@@ -48,10 +67,10 @@ def solve():
         # 차이를 구하는거면 함수 abs 를 사용한다.
         # 왜냐하면 음수가 나올수있기떄문에
         # abs >> 절댓값 나오게하는 함수
-        #print('1>>',res,type(res))
+
         if (res > abs(start_sum - link_sum)):
             res = abs(start_sum-link_sum)
-            #print('2>>',res)
+            # 계속해서 res와 비교해서 최소값 도출하기
 solve()
 print(res)
 
