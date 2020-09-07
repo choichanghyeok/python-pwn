@@ -1,0 +1,59 @@
+# 연산자 끼워넣기
+
+from itertools import permutations
+
+N = int(input())
+# 반복할 횟수
+
+re_N = list(map(int, input().split()))
+# 구해야할 받을 정수
+
+P,M,MU,D = map(int,input().split()) 
+
+# P 더하기 , M 뺴기 , MU 곱하기 , D 나누기
+
+
+op_list = []
+op_list += [1] * P  #더하기 리스트
+op_list += [2] * M  # 빼기 리스트
+op_list += [3] * MU # 곱하기 리스트
+op_list += [4] * D  # 나누기 리스트
+
+op_set = []
+# 중복을 제거한 리스트
+
+for num in list(permutations(op_list)):
+    op_set.append(num)
+op_set = list(set(op_set))  # 중복 제거
+
+max_answer = -1000000001     
+
+# 중간에 계산되는 식의 결과도 항상 -10억보다 크거나 같고, 10억보다 작거나 같다.
+
+min_answer = 1000000001
+
+for case in op_set:     # 중복을 제거한 리스트로 반복문을 돌리고
+    answer = re_N[0]        # 우리가입력한 초깃값을 대입
+
+    for i in range(N-1):        # N-1 만큼 반복
+        if case[i] ==1:
+            answer += re_N[i+1]     # 더하기일 경우
+        if case[i] ==2:
+            answer -= re_N[i+1]     # 빼기일 경우
+        if case[i] ==3:
+            answer *= re_N[i+1]     # 곱셈일 경우
+        if case[i] ==4:
+            if answer < 0:          # 나눗셈일 경우 
+                answer = -(-answer // re_N[i+1])
+            else:       # answer이 나누기전에 음수인지 아닌지 확인하고 음수라면 위의식을 거쳐야함
+                answer //= re_N[i+1]
+
+    if answer < min_answer:     # 최댓값 최솟값 판별
+        min_answer = answer
+    if answer > max_answer:
+        max_answer = answer
+
+print(max_answer)       # 출력
+print(min_answer)
+
+# 출처 : https://claude-u.tistory.com/371
