@@ -1,5 +1,5 @@
 # 개인공부
-## python
+## python and pwn
 
 ## hackctf. offset
 
