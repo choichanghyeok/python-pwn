@@ -1,7 +1,7 @@
 # 개인공부
 ## python and pwn
 
-## hackctf. offset
+## hackctf: offset      
 
 from pwn import *
 
@@ -16,7 +16,7 @@ p.sendline(pay)
 p.interactive()
 
 
-## 14889. 스타트와 링크
+## 백준: 14889. 스타트와 링크
 
 >> 상황에 따라 조합함수 , 수열함수 이용하기
 
