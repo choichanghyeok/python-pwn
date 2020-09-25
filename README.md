@@ -121,7 +121,7 @@ RELRO : Partial
 
 ##코드
 
-이하 생략 ( ) 에서 rtl 풀이 확인하기
+이하 생략 ( 상단 choichanghyeok 이동 / 레벨 문제 / hackCTF문제 / RTL 풀이 )
 
 개인적인 생각으로 case 5: 의 read() 함수를 공격해  bof 를 일으킬수 있을거같다.
 
