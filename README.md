@@ -108,10 +108,15 @@ print(res)
 checksec 입력시
 
 CANARY : disabled
+
 FORTIFY : disabled
+
 NX : ENABLED
+
 PIE : disabled
+
 RELRO : Partial
+
 
 
 이므로 이번문제 역시 yes_or_no 처럼 쉘코드 사용이 불가능하다.
