@@ -119,7 +119,7 @@ RELRO : Partial
 
 일단 바이너리 코드를 살펴보자.
 
-##코드
+코드
 
 이하 생략 ( 상단 choichanghyeok 이동 / 레벨 문제 / hackCTF문제 / RTL 풀이 )
 
@@ -148,6 +148,7 @@ rtl_world 주소를 사용하면 된다.)
 
 따라서 페이로드 작성 @@
 
+## hackctf: rtl_world
 from pwn import *
 
 p = remote('ctf.j0n9hyun.xyz', 3010)
