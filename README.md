@@ -39,7 +39,7 @@ for _ in range(N):
 
 number_list = [i for i in range(N)]     # 멤버들의 총 리스트
 
-res = float('inf')  #???    # 능력치 차이 최소값
+res = float('inf')    # 능력치 차이 최소값
 
 
 '''
