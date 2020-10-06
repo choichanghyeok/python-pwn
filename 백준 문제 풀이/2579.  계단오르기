@@ -1,0 +1,97 @@
+2579. 계단오르기
+
+풀이  ( 런타임 오류 )
+
+
+#계단은 한 번에 한 계단씩 또는 두 계단씩 오를 수 있다. 
+# 즉, 한 계단을 밟으면서 이어서 다음 계단이나, 
+# 다음 다음 계단으로 오를 수 있다.
+#연속된 세 개의 계단을 모두 밟아서는 안 된다. 
+# 단, 시작점은 계단에 포함되지 않는다.
+#마지막 도착 계단은 반드시 밟아야 한다.
+
+
+
+# 팁 반대로 생각해봐라 !!
+
+# 정상적으로 생각하면 복잡하고 힘들다. 따라서 아래에서 위로 올라가는것이아니라 위에서 내려오는식으로 
+# 경우의수를 더한다.
+
+import sys
+
+input = sys.stdin.readline
+
+def walk(st,n):
+    dp = []     # 걸어올라온 합
+    dp.append(st[0])    # 초기값 처음은 올라오기떄문에 시작 값
+
+    for i in range(1,3):
+        if i ==1:   # 한칸을 올라왔을떄
+            dp.append(max(dp[i-1] + st[i], st[i]))
+            continue
+        dp.append(max(dp[i-2]+st[i],st[i-1]+st[i])) # 두칸을 올라왔을떄
+
+    for i in range(3,n):
+        # 이제는 거꾸로 생각해서 max 전 계단 밞은 경우와 밞지 않은경우
+
+        dp.append(max(st[i]+st[i-1]+dp[i-3],st[i]+dp[i-2]))
+
+        # st 가 현재 위치값 or 올라와서 지나간 자리 , dp 올라갈 자리 
+
+    #print('ans = ',dp[n])   # 맨마지막에있는값이 최댓값
+    print(dp[-1])
+    #print(dp[n-1])
+
+
+if __name__ == "__main__":      # main 함수
+    st = []
+    n = int(input().strip())
+    #n = int(input())
+    for i in range(n):
+        st.append(int(input().strip())) # strip() 로 공백제거
+        #st.append(int(input()))
+        # 반복문에서 split() 를 쓸필요가없으므로 공백만 제거한다.
+
+    walk(st,n)
+
+
+# 왜 런타임이 일어나는지는 이해하지못하였다. 나중에라도 이해하면 이유를 추가해보자.
+# 구글에서 많은 도움을 받아 알고리즘을 이해하였다.
+
+
+
+
+
+해결한 코드 
+
+
+
+n = int(input())
+
+al = [0 for _ in range(301)]    # 계단의 개수는 300이하의 자연수
+# 이동 할 위치
+dp = [0 for _ in range(301)]
+# 현재 위치
+
+
+# dp 현재 위치
+# al 지나간 위치
+
+for i in range(n):
+    al[i] = int(input())
+
+dp[0] = al[0]
+dp[1] = al[0] + al[1]
+dp[2] = max(al[1]+al[2],al[0]+al[2])
+
+# al 한칸 올라간 만큼 , 두칸 올라간만큼 중의 최댓값
+
+for i in range(3,n):    # 초기까지는 range(1~3) 으로 구하고
+    # 나머지 3 뒤부터는 반대로 생각해보면 된다.
+
+    dp[i] = max(dp[i-3]+al[i-1]+al[i],dp[i-2]+al[i])
+         # 두번 , 한번 올라온 경우        # 한번 , 두번 올라온 경우
+print(dp[n-1])
+
+    # 마지막칸은 밞아야하므로 마지막칸 밞은 경우와
+    # 밞지 않은경우 두개 연속 세번은 안되므로 쉽게 나옴
