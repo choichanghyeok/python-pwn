@@ -1,0 +1,23 @@
+import sys
+
+input = sys.stdin.readline
+
+n = int(input())		# 자릿수 입력
+
+dp = [[0 for i in range(10)] for j in range(101)]	# 배열 생성 
+mod = 1000000000
+
+for i in range(1,10):		# dp[1] 라인 1로 초기화
+    dp[1][i] = 1
+
+for i in range(2,n+1):		# dp[1]전부를 1로초기화 했기 때문에 2부터 시작
+    for j in range(10):
+        if j == 0:		# j가 0일때는 1밖에없고 9일떄는 8밖에 없으므로 따로 설정해주고
+            dp[i][j] = dp[i-1][1]
+        elif j== 9:
+            dp[i][j] = dp[i-1][8]
+        else:			# 나머지의경우는 계산해준다
+            dp[i][j] = dp[i-1][j-1] + dp[i-1][j+1]
+
+
+print(sum(dp[n])%mod)	# 해당배열에 저장한 숫자를 합하고 문제대로 %로 나누어준다.
