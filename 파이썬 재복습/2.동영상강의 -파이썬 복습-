@@ -1,0 +1,110 @@
+# 퀴즈 4
+
+# 당신의 학교에서는 파이썬 코딩 대회를 주최합니다.
+# 참석률을 높이기 위해 댓글 이벤트를 진행하기로 하였습니다.
+# 댓글 작성자들 중에 추첨을 통해 1명은 치킨, 3명은 커피 쿠폰을 받게 됩니다.
+# 추첨 프로그램을 작성하시오.
+
+# 조건1 : 편의상 댓글은 20명이 작성하였고 아이디는 1~20이라고 가정
+# 조건2 : 댓글 내용과 상관 없이 무작위로 추첨하되 중복 불가
+# 조건3 : random 모듈의 shuffle 과 sample 을 활용
+
+
+# 출력 예제
+
+# -- 당첨자 발표 --
+# 치킨 당첨자 : 1
+# 커피 당첨자 : [2,3,4]
+# -- 축하합니다 --
+
+# (활용예제)
+
+# from random import *
+# lst = [1,2,3,4,5]
+# print(lst)
+# shuffle(lst)
+# print(lst)
+# print(sample(lst,1))
+
+'''
+# 내풀이
+
+from random import *
+
+lst = range(1,21)
+lst = list(lst)
+
+#print(lst)
+#shuffle(lst)
+#print(lst)
+
+print("-- 당첨자 발표 --")
+print("치킨 당첨자 : " + str(randrange(1,20)) )
+print("커피 당첨자 : " + str(sample(lst,3)) )
+print("-- 축하합니다 --")
+
+'''
+
+'''
+# 답안지
+
+from random import *
+
+users = range(1,21)
+users = list(users)
+
+shuffle(users)
+
+winners = sample(users,4)
+
+print("-- 당첨자 발표 --")
+print("치킨 당첨자 : {0}".format(winners[0])  )
+print("커피 당첨자 : {0}".format(winners[1:]) )
+print("-- 축하합니다 --")
+
+'''
+
+# 풀면서 깨닮은점 효율성을 생각하면서 코드를 작성해보자!!
+
+
+
+# 퀴즈 5
+
+# 당신은 Cocoa 서비스를 이용하는 택시 기사님입니다.
+# 50명의 승객과 매칭기회가 있을 때, 총 탑승 승객 수를 구하는 프로그램을 작성하시오.
+
+# 조건1 : 승객별  운행 소요 시간은 5분 ~ 50분 사이의 난수로 정해집니다.
+# 조건2 : 당신은 소요 시간 5분 ~ 15분 사이의 승객만 매칭해야 합니다.
+
+# (출력문 예제)
+# [0] 1번쨰 손님 (소요시간 : 15분)
+# [ ] 2번쨰 손님 (소요시간 : 50분)
+# [0] 3번쨰 손님 (소요시간 : 5분)
+# ....
+# [0] 50번쨰 손님 (소요시간 : 16분)
+
+# 총 탑승 승객 : 2분
+
+
+'''
+
+
+# 내풀이
+
+from random import *
+
+cnt = 0
+
+for i in range(1,51):
+    time = randrange(5,50)
+    if 5 <= time <= 15:
+        print("[0] {}번쨰 손님 (소요시간 : {}분)".format(i,time))
+        cnt +=1
+    else:
+        print("[ ] {}번쨰 손님 (소요시간 : {}분)".format(i,time))
+    
+print("총 탑승 승객 : {}분".format(cnt))
+
+'''
+
+
