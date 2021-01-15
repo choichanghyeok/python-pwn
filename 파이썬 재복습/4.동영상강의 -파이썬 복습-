@@ -1,0 +1,59 @@
+# sep = "vs" 간격 삽입 ex ) 자바 vs 파이썬
+# end = " "  \n 제거
+
+
+
+# 문제 7
+
+#  당신의 회사에서는 매주 1회 작성해야 하는 보고서가 있습니다.
+# 보고서는 항상 아래와 같은 형태로 출력되어야합니다.
+
+# - X  주차 주간보고 -
+# 부서 : 
+# 이름 : 
+# 업무 요약 :
+
+# 1주차부터 50주차까지의 보고서 파일을 만드는 프로그램을 작성하시오
+# 조건 : 파일명은 '1주차.txt', '2주차.txt' ... 와 같이 만든다.
+
+
+'''
+
+# 내풀이
+
+for i in range(1,51):
+    with open(str(i)+"주차.txt", "w", encoding="utf8") as car_file:
+        car_file.write("- {} 주차 주간보고 -".format(i))
+        car_file.write("\n부서 : ")
+        car_file.write("\n이름 : ")
+        car_file.write("\n업무 요약 : ")
+        
+
+'''
+
+'''
+
+# 연습
+
+
+class Unit:
+    def __init__(self,name,hp,damage):
+        self.name = name
+        self.hp = hp
+        self.damage = damage
+        print("{0} 유닛이 생성 되었습니다.".format(self.name))
+        print("체력 {0}, 공격력 {1}".format(self.hp, self.damage))
+
+marine1 = Unit("마린",40,5)
+marine2 = Unit("마린",40,5)
+tank = Unit("탱크",150,35)
+
+
+'''
+
+# 다중상속의 경우 super 을 쓰면 맨처음 상속클래스만 호출된다.
+# 그래서 상속 한개일 경우만 super 을 써서 초기화해도된다.
+
+
+출처 : https://www.youtube.com/watch?v=kWiCuklohdY&t=16732s
+
