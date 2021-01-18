@@ -1,0 +1,192 @@
+
+
+
+
+
+
+# 예외처리
+
+# rause >> 예외를 임의로 발생시킬수 있음
+
+# 퀴즈 9
+
+# 동네에 항상 대기 손님이 있는 맛있는 치킨집이 있습니다.
+# 대기 손님의 치킨 요리 시간을 줄이고자 자동 주문 시스템을 제작 하였습니다.
+# 시스템 코드를 확인하고 적절한 예외처리 구문을 넣으시오.
+
+
+# 조건1 : 1보다 작거나 숫자가 아닌 입력밧이 들어올 떄는 ValueError 로 처리
+#           출력 메세지 : "잘못된 값을 입력하였습니다."
+# 조건2 : 대기 손님이 주문할 수 있는 총 치킨량은 10마리로 한정
+#           치킨 소진 시 사용자 정의 에러[SoldOutError]를 발생시키고 프로그램 종료
+#           출력 메세지 : "재고가 소진되어 더 이상 주문을 받지 않습니다."
+
+
+# [코드]
+
+# chicken = 10
+# waiting = 1
+# while(True):
+#     print("[남은 치킨 : {0}]".format(chicken))
+#     order = int(input("치킨 몇 마리 주문하시겠습니까?"))
+#     if order > chicken: # 남은 치킨 보다 주문량이 많을때
+#         print("재료가 부족합니다.")
+#     else:
+#         print("[대기번호 {0}] {1} 마리 주문이 완료되었습니다.".format(waiting,order))
+#         waiting += 1
+#         chicken -= order
+
+'''
+
+# 내풀이
+
+class SoldOutError(Exception):
+    pass
+
+chicken = 10
+waiting = 1
+
+try:
+    while(True):
+        print("[남은 치킨 : {0}]".format(chicken))
+        order = int(input("치킨 몇 마리 주문하시겠습니까?"))
+        if order == 0:
+            raise ZeroDivisionError
+        if order < 0:
+            raise ValueError
+        # if chicken == 0:
+        #     raise SoldOutError
+        if order > chicken: # 남은 치킨 보다 주문량이 많을때
+            print("재료가 부족합니다.")
+            #raise SoldOutError
+        else:
+            print("[대기번호 {0}] {1} 마리 주문이 완료되었습니다.".format(waiting,order))
+            waiting += 1
+            chicken -= order
+            if chicken == 0:
+                raise SoldOutError
+except ValueError:
+    print("잘못된 값을 입력하였습니다.")
+except ZeroDivisionError:
+    print("잘못된 값을 입력하였습니다.")
+except SoldOutError as sold:
+    print("재고가 소진되어 더 이상 주문을 받지 않습니다.")
+
+
+'''
+
+'''
+
+# 동영상 답안지
+
+class SoldOutError(Exception):
+    pass
+
+chicken = 10
+waiting = 1
+while(True):
+    try:
+        print("[남은 치킨 : {0}]".format(chicken))
+        order = int(input("치킨 몇 마리 주문하시겠습니까?"))
+        if order > chicken: # 남은 치킨 보다 주문량이 많을때
+            print("재료가 부족합니다.")
+        elif order <=0:
+            raise ValueError
+        else:
+            print("[대기번호 {0}] {1} 마리 주문이 완료되었습니다.".format(waiting,order))
+            waiting += 1
+            chicken -= order
+        if chicken ==0:
+            raise SoldOutError
+    except ValueError:
+        print("잘못된 값을 입력하였습니다.")
+    except SoldOutError:
+        print("재고가 소진되어 더 이상 주문을 받지 않습니다.")
+        break
+        
+
+'''
+
+
+'''
+
+# 내풀이 수정
+
+class SoldOutError(Exception):
+    pass
+
+chicken = 10
+waiting = 1
+
+while(True):
+    try:
+        print("[남은 치킨 : {0}]".format(chicken))
+        order = int(input("치킨 몇 마리 주문하시겠습니까?"))
+        if order <= 0:
+            raise ValueError
+        if order > chicken: # 남은 치킨 보다 주문량이 많을때
+            print("재료가 부족합니다.")
+        else:
+            print("[대기번호 {0}] {1} 마리 주문이 완료되었습니다.".format(waiting,order))
+            waiting += 1
+            chicken -= order
+            if chicken == 0:
+                raise SoldOutError
+    except ValueError:
+        print("잘못된 값을 입력하였습니다.")
+    except SoldOutError:
+        print("재고가 소진되어 더 이상 주문을 받지 않습니다.")
+        break
+
+'''
+
+
+# improt inspect
+# import random 
+
+# print(inspect.getfile(random))
+
+# 위의 모듈은 경로를 알고싶을떄 쓰는 모듈
+
+
+# 내장함수
+# input , dir(어떤객체를 넘겨줬을때 객체의 변수와 함수 표시) 등
+
+# 외장함수
+# import random , pickle 등
+
+
+# 퀴즈 10 
+
+# 프로젝트 내에 나만의 시그니처를 남기는 모듈을 만드시오
+
+# 조건 : 모듈 파일명은 byme.py 로 작성
+
+#( 모듈 사용 예제 )
+
+# import byme
+# byme.sign()
+
+# ( 출력 예제 )
+
+# 이 프로그램은 나도코딩에 의해 만들어졌습니다.
+# 유튜브 : http//youtube.com
+# 이메일 : nadocoding@gmail.com
+
+
+# 내 풀이
+
+# byme.py 에 
+
+# def sign(self):
+#     print("이 프로그램은 소라고동에 의해 만들어졌습니다.")
+#     print("유튜브 : http//youtube.com")
+#     print("이메일 : ckdgur147@naver.com")
+
+# 라는 클래스를 만들어서 모듈로 실행
+
+# import byme
+# byme.sign()
+
+
+출처 : 
